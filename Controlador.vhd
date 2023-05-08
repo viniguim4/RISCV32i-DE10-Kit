@@ -13,18 +13,20 @@ entity controlador is
         funct7                                  :   in std_logic_vector(31 downto 25);
         --saidas
         --sinais enviados para multiplexadores
-        extend_sel, jal, MUX_final              :   out std_logic;
+        extend_sel, jal                         :   out std_logic;
+        MUX_final                               :   out std_logic_vector(1 downto 0);
         --sinal para instrucao b
         branch                                  :   out std_logic;
         --sinal para blocos
-        extendop, RegWEN, men_sel               :   out std_logic;
-        ALUOP                                   :   out std_logic_vector(1 downto 0)  
+        RegWEN, men_sel                         :   out std_logic;
+        extendop                                :   out  std_logic_vector(1 downto 0);
+        ALUOP                                   :   out std_logic_vector(3 downto 0)  
     );
 end entity controlador;
 
 architecture behavior of controlador is
     --concatenatar functs
-    signal funct = funct7 & funct3
+    signal funct  : std_logic_vector(9 downto 0) := funct7 & funct3;
 
     begin
         
@@ -33,24 +35,24 @@ architecture behavior of controlador is
                 case opcode is
 
                     when "0000011" =>   -- lw and lb
-                        extendop = "00";
-                        extend_sel = 1;
-                        RegWEN = 1;
-                        branch = 0;
-                        men_sel = 0;
-                        MUX_final = "00";
-                        jal = 0;
-                        ALUOP ="0000"; --somar
+                        extendop <= "00";
+                        extend_sel <= '1';
+                        RegWEN <= '1';
+                        branch <= '0';
+                        men_sel <= '0';
+                        MUX_final <= "00";
+                        jal <= '0';
+                        ALUOP <="0000"; --somar
 
                     
                     when "0010011" =>   -- instrucao tipo i
-                        extendop = "00";
-                        extend_sel = 1;
-                        RegWEN = 1;
-                        branch = 0;
-                        men_sel = 0;
-                        MUX_final = "01";
-                        jal = 0;
+                        extendop <= "00";
+                        extend_sel <= '1';
+                        RegWEN <= '1';
+                        branch <= '0';
+                        men_sel <= '0';
+                        MUX_final <= "01";
+                        jal <= '0';
                         case funct3 is
                             when "000" => ALUOP <= "0000";  -- addi usar adição
                             when "010" => ALUOP <= "0011";  -- slti usar slt
@@ -64,13 +66,13 @@ architecture behavior of controlador is
 
 
                     when "0110011" =>   -- instrucao tipo R
-                        extendop = "00"; -- tanto faz
-                        extend_sel = 0;
-                        RegWEN = 1;
-                        men_sel = 0;
-                        MUX_final = "01";
-                        branch = 0;
-                        jal = 0;
+                        extendop <= "00"; -- tanto faz
+                        extend_sel <= '0';
+                        RegWEN <= '1';
+                        men_sel <= '0';
+                        MUX_final <= "01";
+                        branch <= '0';
+                        jal <= '0';
                         --definir operação da alu
                         case funct is
                             when "0000000000" => ALUOP <= "0000";  -- adição
@@ -87,23 +89,23 @@ architecture behavior of controlador is
                         end case;
 
                     when "0100011" =>   -- instrucao tipo S
-                        extendop = "01"; 
-                        extend_sel = 1;
-                        RegWEN = 0;
-                        men_sel = 1;
-                        MUX_final = "00";
-                        branch = 0;
-                        jal = 0;
-                        ALUOP = "0000";  -- realizar uma soma
+                        extendop <= "01"; 
+                        extend_sel <= '1';
+                        RegWEN <= '0';
+                        men_sel <= '1';
+                        MUX_final <= "00";
+                        branch <= '0';
+                        jal <= '0';
+                        ALUOP <= "0000";  -- realizar uma soma
 
                     when "1100011" =>   -- instrucao tipo b
-                        extendop = "01"; 
-                        extend_sel = 0;
-                        RegWEN = 0;
-                        men_sel = 0;
-                        MUX_final = "01";
-                        branch = 1;
-                        jal = 0;
+                        extendop <= "01"; 
+                        extend_sel <= '0';
+                        RegWEN <= '0';
+                        men_sel <= '0';
+                        MUX_final <= "01";
+                        branch <= '1';
+                        jal <= '0';
                         -- para todos os casos fazer uma sub e então decidir
                         case funct3 is
                             when "000" => ALUOP <= "1011";  -- beq
@@ -113,35 +115,35 @@ architecture behavior of controlador is
                         end case;
 
                     when "0110111" =>   -- instrucao tipo u
-                        extendop = "10"; 
-                        extend_sel = 1;
-                        RegWEN = 1;
-                        men_sel = 0;
-                        MUX_final = "01";
-                        branch = 0;
-                        jal = 0;
+                        extendop <= "10"; 
+                        extend_sel <= '1';
+                        RegWEN <= '1';
+                        men_sel <= '0';
+                        MUX_final <= "01";
+                        branch <= '0';
+                        jal <= '0';
                         --vai deslocar 12 bits
-                        ALUOP = "1110";
+                        ALUOP <= "1110";
                     
                     when "0110111" =>   -- instrucao tipo j
-                        extendop = "11"; 
-                        extend_sel = 0;
-                        RegWEN = 1;
-                        men_sel = 0;
-                        MUX_final = "10";
-                        branch = 0;
-                        jal = 1;
-                        ALUOP ="1111"; -- faz nada na alu
+                        extendop <= "11"; 
+                        extend_sel <= '0';
+                        RegWEN <= '1';
+                        men_sel <= '0';
+                        MUX_final <= "10";
+                        branch <= '0';
+                        jal <= '1';
+                        ALUOP <="1111"; -- faz nada na alu
 
                     when others => 
-                        extendop = "11"; 
-                        extend_sel = 0;
-                        RegWEN = 0;
-                        men_sel = 0;
-                        MUX_final = "10";
-                        branch = 0;
-                        jal = 0;
-                        ALUOP = "1111"; -- faz nada no alu
+                        extendop <= "11"; 
+                        extend_sel <= '0';
+                        RegWEN <= '0';
+                        men_sel <= '0';
+                        MUX_final <= "10";
+                        branch <= '0';
+                        jal <= '0';
+                        ALUOP <= "1111"; -- faz nada no alu
 
                 end case;
         end process;
