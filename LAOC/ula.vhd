@@ -10,13 +10,15 @@ use ieee.numeric_std.all;
 
 entity ula is
     generic (
-        largura_dado : natural
+        largura_dado : natural := 32
     );
 
     port (
+        --entrada 
         entrada_a : in std_logic_vector((largura_dado - 1) downto 0);
         entrada_b : in std_logic_vector((largura_dado - 1) downto 0);
-        seletor   : in std_logic_vector(2 downto 0);
+        seletor   : in std_logic_vector(3 downto 0);  -- é o aluoop
+        --saida
         saida     : out std_logic_vector((largura_dado - 1) downto 0)
     );
 end ula;
@@ -27,7 +29,7 @@ begin
     process (entrada_a, entrada_b, seletor) is
     begin
         case(seletor) is
-            when "000" => -- soma com sinal
+            when "000" => -- adicao
             resultado_ula <= std_logic_vector(signed(entrada_a) + signed(entrada_b));
             when "001" => -- soma estendida
             resultado_ula <= std_logic_vector(signed(entrada_a) + signed(entrada_b));
