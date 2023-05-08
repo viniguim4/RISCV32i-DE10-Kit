@@ -19,31 +19,85 @@ entity ula is
         entrada_b : in std_logic_vector((largura_dado - 1) downto 0);
         seletor   : in std_logic_vector(3 downto 0);  -- é o aluoop
         --saida
-        saida     : out std_logic_vector((largura_dado - 1) downto 0)
+        saida     : out std_logic_vector((largura_dado - 1) downto 0);
+        b         : out std_logic
     );
 end ula;
 
 architecture comportamental of ula is
     signal resultado_ula : std_logic_vector((largura_dado - 1) downto 0);
+    -- para checar se tem um beq , bgl ou blt
+    signal aux : std_logic := '0';
+
 begin
     process (entrada_a, entrada_b, seletor) is
     begin
         case(seletor) is
+            --tipos R
             when "0000" => -- adicao
-            resultado_ula <= std_logic_vector(signed(entrada_a) + signed(entrada_b));
-            when "001" => -- soma estendida
-            resultado_ula <= std_logic_vector(signed(entrada_a) + signed(entrada_b));
-            when "100" => -- and lógico
-            resultado_ula <= entrada_a and entrada_b;
-            when "101" => -- or lógico
-            resultado_ula <= entrada_a or entrada_b;
-            when "110" => -- xor lógico
-            resultado_ula <= entrada_a xor entrada_b;
-            when "111" => -- not lógico
-            resultado_ula <= not(entrada_a);
-            when others => -- xnor lógico
-            resultado_ula <= entrada_a xnor entrada_b;
+                resultado_ula <= std_logic_vector(signed(entrada_a) + signed(entrada_b));
+                aux <= '0';
+            when "0001" => -- subtração
+                resultado_ula <= std_logic_vector(signed(entrada_a) - signed(entrada_b));
+                aux <= '0';
+            when "0010" => -- sll
+                resultado_ula <= std_logic_vector(shift_left(signed(entrada_a), to_integer(signed(entrada_b) ) ) );
+                aux <= '0';
+            when "0011" => -- slt
+                if(unsigned(entrada_a) < unsigned(entrada_b)) then   resultado_ula<= x"00000001";
+                else    resultado_ula <= x"00000000";
+                end if;
+                aux <= '0';
+            when "0100" => --xor
+                resultado_ula <= entrada_a xor entrada_b;
+                aux <= '0';
+            when "0101" => --srl
+                resultado_ula <= std_logic_vector(shift_right(signed(entrada_a), to_integer(signed(entrada_b) ) ));
+                aux <= '0';
+            when "0110" => -- and
+                resultado_ula <= entrada_a and entrada_b;
+                aux <= '0';
+            when "0111" => -- mul
+                resultado_ula <= std_logic_vector(signed(entrada_a) * signed(entrada_b));
+                aux <= '0';
+            when "1000" => -- div
+                resultado_ula <= std_logic_vector(signed(entrada_a) / signed(entrada_b));
+                aux <= '0';
+            when "1001" => -- or
+                resultado_ula <= entrada_a or entrada_b;
+                aux <= '0';
+            -- tipos i
+            when "1010" => -- nop
+                resultado_ula <= "00000000000000000000000000000000";
+                aux <= '0';
+            -- tipo b
+            when "1011" => --beq
+                resultado_ula <= std_logic_vector(signed(entrada_a) - signed(entrada_b));
+                if(to_integer(signed(resultado_ula)) = 0) then aux <= '1';
+                else aux <= '0';
+                end if;
+            when "1100" => --blt
+                resultado_ula <= std_logic_vector(signed(entrada_a) - signed(entrada_b));
+                if(to_integer(signed(resultado_ula)) < 0) then aux <= '1';
+                else aux <= '0';
+                end if;
+            when "1101" => --bge
+                resultado_ula <= std_logic_vector(signed(entrada_a) - signed(entrada_b));
+                if(to_integer(signed(resultado_ula)) >= 0) then aux <= '1';
+                else aux <= '0';
+                end if;
+            -- tipo u
+            when "1110" => --lui
+                resultado_ula <= std_logic_vector(shift_right(signed(entrada_a), 12 ));
+                aux <= '0';
+
+            -- faz nada
+            when "1111" => 
+                resultado_ula <= X"00000000";
+                aux <= '0';
         end case;
+
     end process;
+    b <= aux; -- Valor da saída zero
     saida <= resultado_ula;
 end comportamental;
