@@ -29,7 +29,7 @@ begin
     process (entrada_a, entrada_b, seletor) is
     begin
         case(seletor) is
-            when "000" => -- adicao
+            when "0000" => -- adicao
             resultado_ula <= std_logic_vector(signed(entrada_a) + signed(entrada_b));
             when "001" => -- soma estendida
             resultado_ula <= std_logic_vector(signed(entrada_a) + signed(entrada_b));
