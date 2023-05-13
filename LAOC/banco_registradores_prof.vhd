@@ -9,7 +9,7 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
-entity banco_registradores is
+entity banco_registradores_prof is
     generic (
         largura_dado : natural  :=  32; --  tamnho da instrução de RISCV32i 32 
         largura_ende : natural  :=  5   --  tamnho do endereço de RISCV32i 5 
@@ -24,9 +24,9 @@ entity banco_registradores is
         sai_Rt_dado : out std_logic_vector((largura_dado - 1) downto 0);
         clk, WE     : in std_logic
     );
-end banco_registradores;
+end banco_registradores_prof;
 
-architecture comportamental of banco_registradores is
+architecture comportamental of banco_registradores_prof is
     type registerfile is array(0 to ((2 ** largura_ende) - 1)) of std_logic_vector((largura_dado - 1) downto 0);
     signal banco : registerfile;
 begin
