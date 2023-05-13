@@ -8,7 +8,7 @@ use ieee.std_logic_1164.all;
 
 entity pc is
 	generic (
-		PC_WIDTH : natural -- tamanho de PC em bits (complete)
+		PC_WIDTH : natural := 32
 	);
 	port (
 		entrada : in std_logic_vector (PC_WIDTH - 1 downto 0);

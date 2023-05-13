@@ -8,7 +8,7 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
-entity ula_module is
+entity ula is
     generic (
         largura_dado : natural := 32
     );
@@ -22,9 +22,9 @@ entity ula_module is
         saida     : out std_logic_vector((largura_dado - 1) downto 0);
         b         : out std_logic
     );
-end ula_module;
+end ula;
 
-architecture comportamental of ula_module is
+architecture comportamental of ula is
     signal resultado_ula : std_logic_vector((largura_dado - 1) downto 0);
     -- para checar se tem um beq , bgl ou blt
     signal aux : std_logic := '0';

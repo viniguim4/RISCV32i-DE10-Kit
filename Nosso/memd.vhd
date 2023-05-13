@@ -8,9 +8,9 @@ use ieee.numeric_std.all;
 
 entity memd is
     generic (
-        number_of_words : natural; -- número de words que a sua memória é capaz de armazenar
-        MD_DATA_WIDTH   : natural; -- tamanho da palavra em bits
-        MD_ADDR_WIDTH   : natural  -- tamanho do endereco da memoria de dados em bits
+        number_of_words : natural := 512; -- número de words que a sua memória é capaz de armazenar
+        MD_DATA_WIDTH   : natural := 32; -- tamanho da palavra em bits
+        MD_ADDR_WIDTH   : natural := 11  -- tamanho do endereco da memoria de dados em bits
     );
     port (
         clk                 : in std_logic;

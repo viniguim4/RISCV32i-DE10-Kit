@@ -8,7 +8,7 @@ use ieee.std_logic_1164.all;
 
 entity registrador is
     generic (
-        largura_dado : natural
+        largura_dado : natural := 32
     );
     port (
         entrada_dados  : in std_logic_vector((largura_dado - 1) downto 0);
