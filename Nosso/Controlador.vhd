@@ -20,7 +20,9 @@ entity controlador is
         --sinal para blocos
         RegWEN, men_sel                         :   out std_logic;
         extendop                                :   out  std_logic_vector(1 downto 0);
-        ALUOP                                   :   out std_logic_vector(3 downto 0)  
+        ALUOP                                   :   out std_logic_vector(3 downto 0);
+        --sinal enviado para o banco de registradores
+        load_len                                :   out std_logic_vector(1 downto 0)  
     );
 end entity controlador;
 
@@ -29,12 +31,11 @@ architecture behavior of controlador is
     signal funct  : std_logic_vector(9 downto 0) := funct7 & funct3;
 
     begin
-        
         process(opcode)
             begin
                 case opcode is
 
-                    when "0000011" =>   -- lw and lb
+                    when "0000011" =>   -- lw,lh,lb 
                         extendop <= "00";
                         extend_sel <= '1';
                         RegWEN <= '1';
@@ -43,7 +44,11 @@ architecture behavior of controlador is
                         MUX_final <= "00";
                         jal <= '0';
                         ALUOP <="0000"; --somar
-
+                        case funct3 is
+                            when "000" => load_len <= "00"; --lb
+                            when "001" => load_len <= "01"; --lh
+                            when "010" => load_len <= "10"; --lw
+                        end case;
                     
                     when "0010011" =>   -- instrucao tipo i
                         extendop <= "00";
@@ -53,6 +58,7 @@ architecture behavior of controlador is
                         men_sel <= '0';
                         MUX_final <= "01";
                         jal <= '0';
+                        load_len <= "10";
                         case funct3 is
                             when "000" => ALUOP <= "0000";  -- addi usar adição
                             when "010" => ALUOP <= "0011";  -- slti usar slt
@@ -73,6 +79,7 @@ architecture behavior of controlador is
                         MUX_final <= "01";
                         branch <= '0';
                         jal <= '0';
+                        load_len <= "10";
                         --definir operação da alu
                         case funct is
                             when "0000000000" => ALUOP <= "0000";  -- adição
@@ -96,6 +103,7 @@ architecture behavior of controlador is
                         MUX_final <= "00";
                         branch <= '0';
                         jal <= '0';
+                        load_len <= "10";
                         ALUOP <= "0000";  -- realizar uma soma
 
                     when "1100011" =>   -- instrucao tipo b
@@ -106,6 +114,7 @@ architecture behavior of controlador is
                         MUX_final <= "01";
                         branch <= '1';
                         jal <= '0';
+                        load_len <= "10";
                         -- para todos os casos fazer uma sub e então decidir
                         case funct3 is
                             when "000" => ALUOP <= "1011";  -- beq
@@ -122,6 +131,7 @@ architecture behavior of controlador is
                         MUX_final <= "01";
                         branch <= '0';
                         jal <= '0';
+                        load_len <= "10";
                         --vai deslocar 12 bits
                         ALUOP <= "1110";
                     
@@ -133,6 +143,7 @@ architecture behavior of controlador is
                         MUX_final <= "10";
                         branch <= '0';
                         jal <= '1';
+                        load_len <= "10";
                         ALUOP <="1111"; -- faz nada na alu
 
                     when others => 
@@ -143,6 +154,7 @@ architecture behavior of controlador is
                         MUX_final <= "10";
                         branch <= '0';
                         jal <= '0';
+                        load_len <= "10";
                         ALUOP <= "1111"; -- faz nada no alu
 
                 end case;
