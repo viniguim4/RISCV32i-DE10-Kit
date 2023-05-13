@@ -9,8 +9,8 @@ use ieee.numeric_std.all;
 
 entity memi is
 	generic (
-		INSTR_WIDTH   : natural; -- tamanho da instrucaoo em numero de bits
-		MI_ADDR_WIDTH : natural  -- tamanho do endereco da memoria de instrucoes em numero de bits
+		INSTR_WIDTH   : natural := 32; -- tamanho da instrucaoo em numero de bits
+		MI_ADDR_WIDTH : natural := 11 -- tamanho do endereco da memoria de instrucoes em numero de bits
 	);
 	port (
 		clk       : in std_logic;
@@ -22,6 +22,7 @@ end entity;
 
 architecture comportamental of memi is
 	type rom_type is array (0 to 2 ** MI_ADDR_WIDTH - 1) of std_logic_vector(INSTR_WIDTH - 1 downto 0);
+	--signal aux : std_logic_vector(32 downto 0);
 	signal rom : rom_type;
 begin
 	process (clk, reset) is
@@ -36,6 +37,7 @@ begin
 					others => X"0000"  -- exemplo de uma instrução qualquer de 16 bits (4 símbos em hexadecimal)
 					);
 			else
+				-- aux <= Endereco & '0';
 				Instrucao <= rom(to_integer(unsigned(Endereco)));
 			end if;
 		end if;

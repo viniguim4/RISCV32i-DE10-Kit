@@ -8,7 +8,7 @@ use ieee.std_logic_1164.all;
 
 entity mux41 is
     generic (
-        largura_dado : natural
+        largura_dado : natural := 32
     );
     port (
         dado_ent_0, dado_ent_1, dado_ent_2, dado_ent_3 : in std_logic_vector((largura_dado - 1) downto 0);
@@ -20,8 +20,8 @@ end mux41;
 architecture dataflow of mux41 is
 begin
     with sele_ent select
-        dado_sai <= dado_ent_0 when "00",
-        dado_ent_1 when "01",
-        dado_ent_2 when "10",
+        dado_sai <= dado_ent_0 when "00",  --pega da memoria
+        dado_ent_1 when "01", -- pega da alu
+        dado_ent_2 when "10", -- pega do pc+4
         dado_ent_3 when others;
 end dataflow;
