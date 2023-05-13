@@ -16,12 +16,12 @@ entity banco_registradores is
     );
 
     port (
-        ent_Rs_ende : in std_logic_vector((largura_ende - 1) downto 0);
-        ent_Rt_ende : in std_logic_vector((largura_ende - 1) downto 0);
-        ent_Rd_ende : in std_logic_vector((largura_ende - 1) downto 0);
-        ent_Rd_dado : in std_logic_vector((largura_dado - 1) downto 0);
-        sai_Rs_dado : out std_logic_vector((largura_dado - 1) downto 0);
-        sai_Rt_dado : out std_logic_vector((largura_dado - 1) downto 0);
+        ent_Rs1_ende : in std_logic_vector((largura_ende - 1) downto 0);    -- (19 - 15)
+        ent_Rs2_ende : in std_logic_vector((largura_ende - 1) downto 0);    -- (24 - 20)
+        ent_Rd_ende : in std_logic_vector((largura_ende - 1) downto 0);     -- (11 - 7)
+        ent_Rd_dado : in std_logic_vector((largura_dado - 1) downto 0);     
+        sai_Reg1_dado : out std_logic_vector((largura_dado - 1) downto 0);
+        sai_Reg2_dado : out std_logic_vector((largura_dado - 1) downto 0);
         clk, WE     : in std_logic;
         --sinal do tamanho do dado
         --para diferenciar lw,lh e lb
@@ -35,10 +35,10 @@ architecture comportamental of banco_registradores is
 begin
     leitura : process (clk) is
     begin
-        -- lê o registrador de endereço Rs da instrução apontada por PC no ciclo anterior,
-        -- lê o registrador de endereço Rt da instrução apontada por PC no ciclo anterior.
-        sai_Rs_dado <= banco(to_integer(unsigned(ent_Rs_ende)));
-        sai_Rt_dado <= banco(to_integer(unsigned(ent_Rt_ende)));
+        -- lê o registrador de endereço Rs1 da instrução apontada por PC no ciclo anterior,
+        -- lê o registrador de endereço Rs2 da instrução apontada por PC no ciclo anterior.
+        sai_Reg1_dado <= banco(to_integer(unsigned(ent_Rs1_ende)));
+        sai_Reg2_dado <= banco(to_integer(unsigned(ent_Rs2_ende)));
     end process;
 
     escrita : process (clk) is
