@@ -48,6 +48,7 @@ architecture behavior of controlador is
                             when "000" => load_len <= "00"; --lb
                             when "001" => load_len <= "01"; --lh
                             when "010" => load_len <= "10"; --lw
+                            when others => load_len <= "10"; --lw
                         end case;
                     
                     when "0010011" =>   -- instrucao tipo i
