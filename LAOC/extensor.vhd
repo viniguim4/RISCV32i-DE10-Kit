@@ -31,7 +31,7 @@ begin
 		case extend_sel is
 			when "00" =>   -- instrucao tipo i
 				extensao_20 <= (others => entrada_Rs(largura_dado - 1));	
-				saida    <= extensao_20 & entrada_Rs;	  					
+				saida    <=  extensao_20 & entrada_Rs(31 downto 20) ;	  					
 			when "01" => --  instrução tipo s			
 				aux_12 <= entrada_Rs(11 downto 8) & entrada_Rs(30 downto 25) & entrada_Rs(7) & entrada_Rs(31) ; -- 12 bits 
 				extensao_20 <= (others => entrada_Rs(11)); --20 bits	
