@@ -17,7 +17,10 @@ entity memd is
         mem_write, mem_read : in std_logic; --sinais do controlador
         write_data_mem      : in std_logic_vector(MD_DATA_WIDTH - 1 downto 0);
         adress_mem          : in std_logic_vector(MD_ADDR_WIDTH - 1 downto 0);
-        read_data_mem       : out std_logic_vector(MD_DATA_WIDTH - 1 downto 0)
+        read_data_mem       : out std_logic_vector(MD_DATA_WIDTH - 1 downto 0);
+        --sinal do tamanho do dado
+        --para diferenciar sw,sh e sb
+        data_len    : in std_logic_vector(1 downto 0) 
     );
 end memd;
 
@@ -32,7 +35,16 @@ begin
     begin
         if (rising_edge(clk)) then
             if (mem_write = '1') then
-                ram(to_integer(unsigned(ram_addr))) <= write_data_mem;
+                case data_len is
+                    when "00" =>    --sb
+                    ram(to_integer(unsigned(ram_addr))) <= write_data_mem(7 downto 0);
+
+                    when "01" =>    --sh
+                    ram(to_integer(unsigned(ram_addr))) <= write_data_mem(15 downto 0);
+
+                    when others =>  --sw
+                    ram(to_integer(unsigned(ram_addr))) <= write_data_mem(31 downto 0);
+                end case;
             end if;
         end if;
     end process;
