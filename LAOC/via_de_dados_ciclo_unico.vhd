@@ -28,7 +28,8 @@ entity via_de_dados_ciclo_unico is
         extendop                                :   in  std_logic_vector(1 downto 0);
         ALUOP                                   :   in std_logic_vector(3 downto 0);
         --sinal enviado para o banco de registradores
-        load_len                                :   in std_logic_vector(1 downto 0)  
+        load_len                                :   in std_logic_vector(1 downto 0);
+        store_len                                :   in std_logic_vector(1 downto 0)   
 	);
 end entity via_de_dados_ciclo_unico;
 
@@ -43,7 +44,6 @@ architecture comportamento of via_de_dados_ciclo_unico is
 			entrada : in std_logic_vector(pc_width - 1 downto 0);
 			saida   : out std_logic_vector(pc_width - 1 downto 0);
 			clk     : in std_logic;
-			we      : in std_logic;
 			reset   : in std_logic
 		);
 	end component;
@@ -124,7 +124,7 @@ architecture comportamento of via_de_dados_ciclo_unico is
 			clk, WE     : in std_logic;
 			--sinal do tamanho do dado
 			--para diferenciar lw,lh e lb
-			data_len    : in std_logic_vector(1 downto 0)
+			data_len_breg    : in std_logic_vector(1 downto 0)
 		);
 	end component;
 
@@ -164,7 +164,10 @@ architecture comportamento of via_de_dados_ciclo_unico is
 			mem_write, mem_read : in std_logic; --sinais do controlador
 			write_data_mem      : in std_logic_vector(MD_DATA_WIDTH - 1 downto 0);
 			adress_mem          : in std_logic_vector(MD_ADDR_WIDTH - 1 downto 0);
-			read_data_mem       : out std_logic_vector(MD_DATA_WIDTH - 1 downto 0)
+			read_data_mem       : out std_logic_vector(MD_DATA_WIDTH - 1 downto 0);
+			--sinal do tamanho do dado
+			--para diferenciar sw,sh e sb
+			data_len_memd    : in std_logic_vector(1 downto 0) 
 		);
 	end component;
 	
@@ -203,78 +206,41 @@ architecture comportamento of via_de_dados_ciclo_unico is
 	signal aux_saida_and : std_logic_Vector(31 downto 0);
 
 	--sinais de controle
-    signal instrucao_pc : std_logic_Vector(31 downto 0);
-
-	signal aux_read_rs    : std_logic_vector(fr_addr_width - 1 downto 0);
-	signal aux_read_rt    : std_logic_vector(fr_addr_width - 1 downto 0);
-	signal aux_write_rd   : std_logic_vector(fr_addr_width - 1 downto 0);
-	signal aux_data_in    : std_logic_vector(data_width - 1 downto 0);
-	signal aux_data_outrs : std_logic_vector(data_width - 1 downto 0);
-	signal aux_data_outrt : std_logic_vector(data_width - 1 downto 0);
-	signal aux_reg_write  : std_logic;
-
-	signal aux_ula_ctrl : std_logic_vector(ula_ctrl_width - 1 downto 0);
-
-	signal aux_pc_out  : std_logic_vector(pc_width - 1 downto 0);
-	signal aux_novo_pc : std_logic_vector(pc_width - 1 downto 0);
-	signal aux_we      : std_logic;
 
 begin
 
-	-- A partir deste comentário faça associações necessárias das entradas declaradas na entidade da sua via_dados_ciclo_unico com
-	-- os sinais que você acabou de definir.
-	-- Veja os exemplos abaixo:
-	aux_read_rs   <= instrucao(7 downto 4);  -- OP OP OP OP RD RD RD RD RS RS RS RS RT RT RT RT
-	aux_read_rt   <= instrucao(3 downto 0);  -- OP OP OP OP RD RD RD RD RS RS RS RS RT RT RT RT
-	aux_write_rd  <= instrucao(11 downto 8); -- OP OP OP OP RD RD RD RD RS RS RS RS RT RT RT RT
-	aux_reg_write <= controle(4);            -- WE RW UL UL UL UL
-	aux_ula_ctrl  <= controle(3 downto 0);   -- WE RW UL UL UL UL
-	aux_we        <= controle(5);            -- WE RW UL UL UL UL
-	saida         <= aux_data_outrt;
-	pc_out        <= aux_pc_out;
+	instancia_pc : component pc
+	port map(
+		entrada => aux_saida_mux_jump,
+		saida   => aux_saida_pc,
+		clk     => clock,
+		reset   => reset
+	);
 
-	-- A partir deste comentário instancie todos o componentes que serão usados na sua via_de_dados_ciclo_unico.
-	-- A instanciação do componente deve começar com um nome que você deve atribuir para a referida instancia seguido de : e seguido do nome
-	-- que você atribuiu ao componente.
-	-- Depois segue o port map do referido componente instanciado.
-	-- Para fazer o port map, na parte da esquerda da atribuição "=>" deverá vir o nome de origem da porta do componente e na parte direita da
-	-- atribuição deve aparecer um dos sinais ("fios") que você definiu anteriormente, ou uma das entradas da entidade via_de_dados_ciclo_unico,
-	-- ou ainda uma das saídas da entidade via_de_dados_ciclo_unico.
-	-- Veja os exemplos de instanciação a seguir:
+	instancia_adder4 : component Adder_4
+	port map(
+		adder4_in =>	aux_saida_pc,
 
-	instancia_ula1 : component ula
-  		port map(
-			entrada_a => aux_data_outrs,
-			entrada_b => aux_data_outrt,
-			seletor => aux_ula_ctrl,
-			saida => aux_data_in
- 		);
+		adder4_out =>    aux_saida_adder4
+	);
+	
+	instancia_adder_normal_sll : component Adder_normal
+	port map(
+		adder_in1	 =>	aux_saida_adder4,
+		adder_in2 => aux_saida_sll2,
+		adder_out =>    aux_saida_addnormal_sleft
+	);
 
-	instancia_banco_registradores : component banco_registradores
-		port map(
-			ent_rs_ende => aux_read_rs,
-			ent_rt_ende => aux_read_rt,
-			ent_rd_ende => aux_write_rd,
-			ent_rd_dado => aux_data_in,
-			sai_rs_dado => aux_data_outrs,
-			sai_rt_dado => aux_data_outrt,
-			clk => clock,
-			we => aux_reg_write
-		);
+	instancia_adder_normal_pc : component Adder_normal
+	port map(
+		adder_in1	 =>	aux_saida_pc,
+		adder_in2 => aux_saida_sll2,
+		adder_out =>    aux_saida_addnormal_4
+	);
 
-    instancia_pc : component pc
-    	port map(
-			entrada => aux_novo_pc,
-			saida => aux_pc_out,
-			clk => clock,
-			we => aux_we,
-			reset => reset
-      	);
 
-    instancia_somador : component somador
-        port map(
-			entrada_a => aux_pc_out,
-			entrada_b => "0001",
-			saida => aux_novo_pc
-        );
+
+
+
+
 end architecture comportamento;
