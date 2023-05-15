@@ -20,7 +20,7 @@ entity memd is
         read_data_mem       : out std_logic_vector(MD_DATA_WIDTH - 1 downto 0);
         --sinal do tamanho do dado
         --para diferenciar sw,sh e sb
-        data_len    : in std_logic_vector(1 downto 0) 
+        data_len_memd    : in std_logic_vector(1 downto 0) 
     );
 end memd;
 
@@ -35,7 +35,7 @@ begin
     begin
         if (rising_edge(clk)) then
             if (mem_write = '1') then
-                case data_len is
+                case data_len_memd is
                     when "00" =>    --sb
                     ram(to_integer(unsigned(ram_addr))) <= write_data_mem(7 downto 0);
 

@@ -25,7 +25,7 @@ entity banco_registradores is
         clk, WE     : in std_logic;
         --sinal do tamanho do dado
         --para diferenciar lw,lh e lb
-        data_len    : in std_logic_vector(1 downto 0)
+        data_len_breg    : in std_logic_vector(1 downto 0)
     );
 end banco_registradores;
 
@@ -45,7 +45,7 @@ begin
     begin
         if rising_edge(clk) then
             if WE = '1' then
-                case data_len is
+                case data_len_breg is
                     when "00" =>
                     banco(to_integer(unsigned(ent_Rd_ende))) <= ent_Rd_dado(7 downto 0);
 
