@@ -52,7 +52,7 @@ begin
                     when "01" =>
                     banco(to_integer(unsigned(ent_Rd_ende))) <= ent_Rd_dado(15 downto 0);
 
-                    when "10" =>
+                    when others =>
                     banco(to_integer(unsigned(ent_Rd_ende))) <= ent_Rd_dado((largura_dado -1) downto 0);
                 end case;
             end if;
