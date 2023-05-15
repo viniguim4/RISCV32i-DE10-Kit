@@ -22,7 +22,8 @@ entity controlador is
         extendop                                :   out  std_logic_vector(1 downto 0);
         ALUOP                                   :   out std_logic_vector(3 downto 0);
         --sinal enviado para o banco de registradores
-        load_len                                :   out std_logic_vector(1 downto 0)  
+        load_len                                :   out std_logic_vector(1 downto 0);
+        store_len                                :   out std_logic_vector(1 downto 0)   
     );
 end entity controlador;
 
@@ -43,6 +44,7 @@ architecture behavior of controlador is
                         men_sel <= '0';
                         MUX_final <= "00";
                         jal <= '0';
+                        store_len <= "10";
                         ALUOP <="0000"; --somar
                         case funct3 is
                             when "000" => load_len <= "00"; --lb
@@ -59,6 +61,7 @@ architecture behavior of controlador is
                         men_sel <= '0';
                         MUX_final <= "01";
                         jal <= '0';
+                        store_len <= "10";
                         load_len <= "10";
                         case funct3 is
                             when "000" => ALUOP <= "0000";  -- addi usar adição
@@ -80,6 +83,7 @@ architecture behavior of controlador is
                         MUX_final <= "01";
                         branch <= '0';
                         jal <= '0';
+                        store_len <= "10";
                         load_len <= "10";
                         --definir operação da alu
                         case funct is
@@ -87,7 +91,7 @@ architecture behavior of controlador is
                             when "0100000000" => ALUOP <= "0001"; -- subtração                                
                             when "0000000001" => ALUOP <= "0010"; -- sll
                             when "0000000010" => ALUOP <= "0011"; -- slt
-                            when "0000000100" => ALUOP <= "0100"; -- xor
+                            when "0000000100" =oad> ALUOP <= "0100"; -- xor
                             when "0000000101" => ALUOP <= "0101"; -- srl
                             when "0000000111" => ALUOP <= "0110"; -- and
                             when "0000001000" => ALUOP <= "0111"; -- mul
@@ -104,7 +108,12 @@ architecture behavior of controlador is
                         MUX_final <= "00";
                         branch <= '0';
                         jal <= '0';
-                        load_len <= "10";
+                        case funct3 is
+                            when "000" => store_len <= "00"; --sb
+                            when "001" => store_len <= "01"; --sh
+                            when "010" => store_len <= "10"; --sw
+                            when others => store_len <= "10"; --sw
+                        end case;
                         ALUOP <= "0000";  -- realizar uma soma
 
                     when "1100011" =>   -- instrucao tipo b
@@ -115,6 +124,7 @@ architecture behavior of controlador is
                         MUX_final <= "01";
                         branch <= '1';
                         jal <= '0';
+                        store_len <= "10";
                         load_len <= "10";
                         -- para todos os casos fazer uma sub e então decidir
                         case funct3 is
@@ -132,6 +142,7 @@ architecture behavior of controlador is
                         MUX_final <= "01";
                         branch <= '0';
                         jal <= '0';
+                        store_len <= "10";
                         load_len <= "10";
                         --vai deslocar 12 bits
                         ALUOP <= "1110";
@@ -144,6 +155,7 @@ architecture behavior of controlador is
                         MUX_final <= "10";
                         branch <= '0';
                         jal <= '1';
+                        store_len <= "10";
                         load_len <= "10";
                         ALUOP <="1111"; -- faz nada na alu
 
@@ -155,6 +167,7 @@ architecture behavior of controlador is
                         MUX_final <= "10";
                         branch <= '0';
                         jal <= '0';
+                        store_len <= "10";
                         load_len <= "10";
                         ALUOP <= "1111"; -- faz nada no alu
 
