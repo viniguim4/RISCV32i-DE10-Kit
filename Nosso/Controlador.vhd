@@ -23,7 +23,7 @@ entity controlador is
         ALUOP                                   :   out std_logic_vector(3 downto 0);
         --sinal enviado para o banco de registradores
         load_len                                :   out std_logic_vector(1 downto 0);
-        store_len                                :   out std_logic_vector(1 downto 0)   
+        store_len                               :   out std_logic_vector(1 downto 0)   
     );
 end entity controlador;
 

@@ -24,7 +24,7 @@ entity via_de_dados_ciclo_unico is
         --sinal para instrucao b
         branch                                  :   in std_logic;
         --sinal para blocos
-        RegWEN, men_sel                         :   in std_logic;
+        RegWEN, mem_sel                         :   in std_logic;
         extendop                                :   in  std_logic_vector(1 downto 0);
         ALUOP                                   :   in std_logic_vector(3 downto 0);
         --sinal enviado para o banco de registradores
@@ -315,7 +315,7 @@ begin
 	instancia_memd: component memd
 	port map(
 		clk => clock,
-		mem_sel  => men_sel,
+		mem_sel  => mem_sel,
         adress_mem  => aux_saida_alu,
 		write_data_mem =>  aux_saida_data_reg2,
 		read_data_mem => aux_saida_memd,
