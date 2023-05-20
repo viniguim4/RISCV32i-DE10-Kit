@@ -9,7 +9,7 @@ entity processador_ciclo_unico is
 	port (
 		--		Chaves_entrada 			: in std_logic_vector(DATA_WIDTH-1 downto 0);
 		--		Chave_enter				: in std_logic;
-		--Leds_vermelhos_saida : out std_logic_vector(DATA_WIDTH - 1 downto 0);
+		--		Leds_vermelhos_saida : out std_logic_vector(DATA_WIDTH - 1 downto 0);
 		Chave_reset          : in std_logic;
 		Clock                : in std_logic
 	);
