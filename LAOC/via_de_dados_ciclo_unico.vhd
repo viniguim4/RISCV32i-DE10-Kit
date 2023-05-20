@@ -29,7 +29,7 @@ entity via_de_dados_ciclo_unico is
         ALUOP                                   :   in std_logic_vector(3 downto 0);
         --sinal enviado para o banco de registradores
         load_len                                :   in std_logic_vector(1 downto 0);
-        store_len                                :   in std_logic_vector(1 downto 0)   
+        store_len                               :   in std_logic_vector(1 downto 0)   
 	);
 end entity via_de_dados_ciclo_unico;
 
@@ -118,10 +118,10 @@ architecture comportamento of via_de_dados_ciclo_unico is
 			ent_Rs1_ende : in std_logic_vector((largura_ende - 1) downto 0);    -- (19 - 15)
 			ent_Rs2_ende : in std_logic_vector((largura_ende - 1) downto 0);    -- (24 - 20)
 			ent_Rd_ende : in std_logic_vector((largura_ende - 1) downto 0);     -- (11 - 7)
-			ent_Rd_dado : in std_logic_vector((largura_dado - 1) downto 0);     
+			write_data_reg : in std_logic_vector((largura_dado - 1) downto 0);     
 			sai_Reg1_dado : out std_logic_vector((largura_dado - 1) downto 0);
 			sai_Reg2_dado : out std_logic_vector((largura_dado - 1) downto 0);
-			clk, WE     : in std_logic;
+			clk, RegWEN     : in std_logic;
 			--sinal do tamanho do dado
 			--para diferenciar lw,lh e lb
 			data_len_breg    : in std_logic_vector(1 downto 0)
@@ -161,7 +161,7 @@ architecture comportamento of via_de_dados_ciclo_unico is
 		);
 		port (
 			clk                 : in std_logic;
-			mem_write, mem_read : in std_logic; --sinais do controlador
+			mem_sel : in std_logic; --sinais do controlador
 			write_data_mem      : in std_logic_vector(MD_DATA_WIDTH - 1 downto 0);
 			adress_mem          : in std_logic_vector(MD_ADDR_WIDTH - 1 downto 0);
 			read_data_mem       : out std_logic_vector(MD_DATA_WIDTH - 1 downto 0);
@@ -203,9 +203,10 @@ architecture comportamento of via_de_dados_ciclo_unico is
 	signal aux_saida_addnormal_4 : std_logic_Vector(31 downto 0);
 	signal aux_saida_mux_branch : std_logic_Vector(31 downto 0);
 	signal aux_saida_mux_jump : std_logic_Vector(31 downto 0);
-	signal aux_saida_and : std_logic_Vector(31 downto 0);
 
 	--sinais de controle
+	signal aux_saida_alu_b : std_logic;
+	signal aux_saida_and : std_logic;
 
 begin
 
@@ -220,7 +221,6 @@ begin
 	instancia_adder4 : component Adder_4
 	port map(
 		adder4_in =>	aux_saida_pc,
-
 		adder4_out =>    aux_saida_adder4
 	);
 	
@@ -238,9 +238,98 @@ begin
 		adder_out =>    aux_saida_addnormal_4
 	);
 
+	instancia_and : component and_port
+	port map(
+        entrada1   =>   aux_saida_alu_b ,
+        entrada2   =>  branch,
+        saida   =>   aux_saida_and
+	);
 
+	instancia_mux21_branch : component mux21
+	port map(
+		dado_ent_0 => aux_saida_adder4,
+		dado_ent_1 => aux_saida_addnormal_sleft,
+        sele_ent  =>    aux_saida_and,
+        dado_sai  =>  aux_saida_mux_branch 
+	);
 
+	instancia_mux21_jal : component mux21
+	port map(
+		dado_ent_0 => aux_saida_addnormal_4,
+		dado_ent_1 => aux_saida_mux_branch,
+        sele_ent  =>    jal,
+        dado_sai  =>  aux_saida_mux_jump
+	);
 
+	instancia_sll2 : component shift_left2
+	port map(
+		signal_extend_in  => aux_saida_extensor,
+		exit_sll2  => aux_saida_sll2
+	);
 
+	instancia_memi : component memi
+	port map(
+		clk  => clock,
+		reset  => reset,
+		Endereco => aux_saida_pc,
+		Instrucao => aux_saida_memi
+	);
+
+	instancia_banco_reg : component banco_registradores
+	port map(
+		ent_Rs1_ende => aux_saida_memi(19 downto 15),
+        ent_Rs2_ende => aux_saida_memi(24 downto 20),
+        ent_Rd_ende => aux_saida_memi(11 downto 7),
+        write_data_reg => aux_saida_mux41,
+        sai_Reg1_dado => aux_saida_data_reg1,
+        sai_Reg2_dado => aux_saida_data_reg2,
+        clk    => clock,
+		RegWEN => RegWEN,
+        data_len_breg => load_len
+	);
+
+	instancia_extensor : component extensor
+	port map(
+		entrada_Rs  => aux_saida_memi(31 downto 7),
+		extend_sel  => extendop,
+		saida => aux_saida_extensor
+	);
+
+	instancia_mux21_extend : component mux21
+	port map(
+		dado_ent_0 => aux_saida_data_reg2,
+		dado_ent_1 => aux_saida_extensor,
+        sele_ent  => extend_sel,
+        dado_sai  =>  aux_saida_mux21_extend
+	);
+
+	instancia_alu: component ula
+	port map(
+		entrada_a => aux_saida_data_reg1,
+		entrada_b  => aux_saida_mux21_extend,
+        seletor  => ALUOP,
+		saida  =>  aux_saida_alu ,
+		b  => aux_saida_alu_b
+	);
+
+	instancia_memd: component memd
+	port map(
+		clk => clock,
+		mem_sel  => men_sel,
+        adress_mem  => aux_saida_alu,
+		write_data_mem =>  aux_saida_data_reg2,
+		read_data_mem => aux_saida_memd,
+		data_len_memd  => store_len 
+	);
+
+	instancia_mux41 : component mux41
+	port map(
+		dado_ent_0 => aux_saida_memd,
+		dado_ent_1 => aux_saida_alu,
+		dado_ent_2 => aux_saida_adder4,
+		dado_ent_3 => aux_saida_adder4, -- nao usar
+        sele_ent  =>    MUX_final,
+        dado_sai  =>  aux_saida_mux41
+	);
 
 end architecture comportamento;

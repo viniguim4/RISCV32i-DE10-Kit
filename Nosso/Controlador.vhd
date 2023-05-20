@@ -91,7 +91,7 @@ architecture behavior of controlador is
                             when "0100000000" => ALUOP <= "0001"; -- subtração                                
                             when "0000000001" => ALUOP <= "0010"; -- sll
                             when "0000000010" => ALUOP <= "0011"; -- slt
-                            when "0000000100" =oad> ALUOP <= "0100"; -- xor
+                            when "0000000100" => ALUOP <= "0100"; -- xor
                             when "0000000101" => ALUOP <= "0101"; -- srl
                             when "0000000111" => ALUOP <= "0110"; -- and
                             when "0000001000" => ALUOP <= "0111"; -- mul
