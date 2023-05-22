@@ -34,9 +34,8 @@ architecture comportamental of banco_registradores is
     type registerfile is array(0 to 31) of std_logic_vector((largura_dado - 1) downto 0);
     signal banco : registerfile := (others => (others => '0'));
 begin
-    leitura : process (clk) is 
+    leitura : process (clk, ent_Rs1_ende, ent_Rs2_ende) is 
     begin
-			
         -- lê o registrador de endereço Rs1 da instrução apontada por PC no ciclo anterior,
         -- lê o registrador de endereço Rs2 da instrução apontada por PC no ciclo anterior.
         sai_Reg1_dado <= banco(to_integer(unsigned(ent_Rs1_ende)));
@@ -45,19 +44,17 @@ begin
 
     escrita : process (clk) is
     begin
-        if rising_edge(clk) then
-            if RegWEN  = '1' then
-                case data_len_breg is
-                    when "00" =>
-                    banco(to_integer(unsigned(ent_Rd_ende))) <= banco(to_integer(unsigned(ent_Rd_ende)))(31 downto 8) & write_data_reg(7 downto 0);
+        if rising_edge(clk) and RegWEN = '1' then
+            case data_len_breg is
+                when "00" =>
+                banco(to_integer(unsigned(ent_Rd_ende))) <= banco(to_integer(unsigned(ent_Rd_ende)))(31 downto 8) & write_data_reg(7 downto 0);
 
-                    when "01" =>
-                    banco(to_integer(unsigned(ent_Rd_ende))) <= banco(to_integer(unsigned(ent_Rd_ende)))(31 downto 16) & write_data_reg(15 downto 0);
+                when "01" =>
+                banco(to_integer(unsigned(ent_Rd_ende))) <= banco(to_integer(unsigned(ent_Rd_ende)))(31 downto 16) & write_data_reg(15 downto 0);
 
-                    when others =>
-                    banco(to_integer(unsigned(ent_Rd_ende))) <= write_data_reg((largura_dado -1) downto 0);
-                end case;
-            end if;
+                when others =>
+                banco(to_integer(unsigned(ent_Rd_ende))) <= write_data_reg((largura_dado -1) downto 0);
+            end case;
         end if;
     end process;
 end comportamental;
