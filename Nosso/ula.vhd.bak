@@ -66,6 +66,10 @@ begin
             when "1001" => -- or
                 resultado_ula <= entrada_a or entrada_b;
                 aux <= '0';
+            -- tipos i
+            when "1010" => -- nop
+                resultado_ula <= "00000000000000000000000000000000";
+                aux <= '0';
             -- tipo b
             when "1011" => --beq
                 resultado_ula <= std_logic_vector(signed(entrada_a) - signed(entrada_b));
@@ -88,10 +92,11 @@ begin
                 aux <= '0';
 
             -- faz nada
-            when others => 
+            when "1111" => 
                 resultado_ula <= X"00000000";
                 aux <= '0';
         end case;
+
     end process;
     b <= aux; -- Valor da saída zero
     saida <= resultado_ula;

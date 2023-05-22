@@ -18,7 +18,7 @@ entity controlador is
         --sinal para instrucao b
         branch                                  :   out std_logic;
         --sinal para blocos
-        RegWEN, mem_sel                         :   out std_logic;
+        RegWEN, men_sel                         :   out std_logic;
         extendop                                :   out  std_logic_vector(1 downto 0);
         ALUOP                                   :   out std_logic_vector(3 downto 0);
         --sinal enviado para o banco de registradores
@@ -29,20 +29,19 @@ end entity controlador;
 
 architecture behavior of controlador is
     --concatenatar functs
-    --signal funct  : std_logic_vector(9 downto 0) := funct7 & funct3;
+    signal funct  : std_logic_vector(9 downto 0) := funct7 & funct3;
 
     begin
-        process(opcode, funct7 , funct3)
-		  variable funct : std_logic_vector(9 downto 0);
+        process(opcode)
             begin
-				funct := funct7 & funct3;
-                case opcode is	
+                case opcode is
+
                     when "0000011" =>   -- lw,lh,lb 
                         extendop <= "00";
                         extend_sel <= '1';
                         RegWEN <= '1';
                         branch <= '0';
-                        mem_sel <= '0';
+                        men_sel <= '0';
                         MUX_final <= "00";
                         jal <= '0';
                         store_len <= "10";
@@ -59,7 +58,7 @@ architecture behavior of controlador is
                         extend_sel <= '1';
                         RegWEN <= '1';
                         branch <= '0';
-                        mem_sel <= '0';
+                        men_sel <= '0';
                         MUX_final <= "01";
                         jal <= '0';
                         store_len <= "10";
@@ -71,6 +70,7 @@ architecture behavior of controlador is
                             when "110" => ALUOP <= "1001";  -- ori usar or
                             when "111" => ALUOP <= "0110";  -- andi usar and
                             when "001" => ALUOP <= "0010";  -- slli usar sll
+                            when "001" => ALUOP <= "1010";  -- nop(soma com 2 0)
                             when others => ALUOP <= "1111"; -- nao faz nada
                         end case;
 
@@ -79,7 +79,7 @@ architecture behavior of controlador is
                         extendop <= "00"; -- tanto faz
                         extend_sel <= '0';
                         RegWEN <= '1';
-                        mem_sel <= '0';
+                        men_sel <= '0';
                         MUX_final <= "01";
                         branch <= '0';
                         jal <= '0';
@@ -104,7 +104,7 @@ architecture behavior of controlador is
                         extendop <= "01"; 
                         extend_sel <= '1';
                         RegWEN <= '0';
-                        mem_sel <= '1';
+                        men_sel <= '1';
                         MUX_final <= "00";
                         branch <= '0';
                         jal <= '0';
@@ -120,7 +120,7 @@ architecture behavior of controlador is
                         extendop <= "01"; 
                         extend_sel <= '0';
                         RegWEN <= '0';
-                        mem_sel <= '0';
+                        men_sel <= '0';
                         MUX_final <= "01";
                         branch <= '1';
                         jal <= '0';
@@ -138,7 +138,7 @@ architecture behavior of controlador is
                         extendop <= "10"; 
                         extend_sel <= '1';
                         RegWEN <= '1';
-                        mem_sel <= '0';
+                        men_sel <= '0';
                         MUX_final <= "01";
                         branch <= '0';
                         jal <= '0';
@@ -147,11 +147,11 @@ architecture behavior of controlador is
                         --vai deslocar 12 bits
                         ALUOP <= "1110";
                     
-                    when "1101111" =>   -- instrucao tipo j
+                    when "0110111" =>   -- instrucao tipo j
                         extendop <= "11"; 
                         extend_sel <= '0';
                         RegWEN <= '1';
-                        mem_sel <= '0';
+                        men_sel <= '0';
                         MUX_final <= "10";
                         branch <= '0';
                         jal <= '1';
@@ -163,7 +163,7 @@ architecture behavior of controlador is
                         extendop <= "11"; 
                         extend_sel <= '0';
                         RegWEN <= '0';
-                        mem_sel <= '0';
+                        men_sel <= '0';
                         MUX_final <= "10";
                         branch <= '0';
                         jal <= '0';

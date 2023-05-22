@@ -42,7 +42,7 @@ architecture comportamento of processador_ciclo_unico is
 		);
 	end component;
 
-	component Controlador is
+	component unidade_de_controle_ciclo_unico is
 		port (
 			------------------- Entradas ---------------------
 			opcode      :   in std_logic_vector(6 downto 0);
@@ -102,7 +102,7 @@ begin
 	-- ou ainda uma das saídas da entidade processador_ciclo_unico.
 	-- Veja os exemplos de instanciação a seguir:
 
-	instancia_unidade_de_controle_ciclo_unico : Controlador
+	instancia_unidade_de_controle_ciclo_unico : unidade_de_controle_ciclo_unico
 	port map(
 		opcode => aux_opcode,
 		funct3 => aux_funct3,

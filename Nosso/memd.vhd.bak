@@ -37,10 +37,10 @@ begin
             if (mem_sel = '1') then
                 case data_len_memd is
                     when "00" =>    --sb
-                    ram(to_integer(unsigned(ram_addr))) <= ram(to_integer(unsigned(ram_addr)))(31 downto 8) & write_data_mem(7 downto 0);
+                    ram(to_integer(unsigned(ram_addr))) <= write_data_mem(7 downto 0);
 
                     when "01" =>    --sh
-                    ram(to_integer(unsigned(ram_addr))) <= ram(to_integer(unsigned(ram_addr)))(31 downto 16) & write_data_mem(15 downto 0);
+                    ram(to_integer(unsigned(ram_addr))) <= write_data_mem(15 downto 0);
 
                     when others =>  --sw
                     ram(to_integer(unsigned(ram_addr))) <= write_data_mem(31 downto 0);
