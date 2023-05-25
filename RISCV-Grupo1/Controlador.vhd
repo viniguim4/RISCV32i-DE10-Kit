@@ -124,7 +124,7 @@ architecture behavior of controlador is
                         MUX_final <= "01";
                         branch <= '1';
                         jal <= '0';
-                        store_len <= "10";
+                        store_len <= "XX";
                         load_len <= "10";
                         -- para todos os casos fazer uma sub e então decidir
                         case funct3 is
