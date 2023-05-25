@@ -27,10 +27,10 @@ end ula;
 architecture comportamental of ula is
     signal resultado_ula : std_logic_vector((largura_dado - 1) downto 0);
     -- para checar se tem um beq , bgl ou blt
-    signal aux : std_logic := '0';
+    signal aux : std_logic;
 
 begin
-    process (entrada_a, entrada_b, seletor) is
+    process (entrada_a, entrada_b, seletor, aux) is
     begin
         case(seletor) is
             --tipos R
@@ -69,17 +69,17 @@ begin
             -- tipo b
             when "1011" => --beq
                 resultado_ula <= std_logic_vector(signed(entrada_a) - signed(entrada_b));
-                if(to_integer(signed(resultado_ula)) = 0) then aux <= '1';
+                if(entrada_a = entrada_b) then aux <= '1';
                 else aux <= '0';
                 end if;
             when "1100" => --blt
                 resultado_ula <= std_logic_vector(signed(entrada_a) - signed(entrada_b));
-                if(to_integer(signed(resultado_ula)) < 0) then aux <= '1';
+                if(entrada_a < entrada_b) then aux <= '1';
                 else aux <= '0';
                 end if;
             when "1101" => --bge
                 resultado_ula <= std_logic_vector(signed(entrada_a) - signed(entrada_b));
-                if(to_integer(signed(resultado_ula)) >= 0) then aux <= '1';
+                if(entrada_a >= entrada_b) then aux <= '1';
                 else aux <= '0';
                 end if;
             -- tipo u

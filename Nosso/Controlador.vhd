@@ -120,11 +120,11 @@ architecture behavior of controlador is
                         extendop <= "01"; 
                         extend_sel <= '0';
                         RegWEN <= '0';
-                        mem_sel <= '0';
+                        mem_sel <= 'X';
                         MUX_final <= "01";
                         branch <= '1';
                         jal <= '0';
-                        store_len <= "10";
+                        store_len <= "XX";
                         load_len <= "10";
                         -- para todos os casos fazer uma sub e então decidir
                         case funct3 is
