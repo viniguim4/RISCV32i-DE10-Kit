@@ -44,8 +44,8 @@ begin
 				saida <= std_logic_vector(shift_right(unsigned(extensao_20 & aux_12), 1) -1  );   
 			else  --instrucao tipo j -- arrumar
 				extensao_12 <= ((others => entrada_Rs(largura_dado - 1)));
-				aux_20 <= entrada_Rs(31) & entrada_Rs(21 downto 12) & entrada_Rs(22) & entrada_Rs(30 downto 23);
-				saida <= extensao_12 & aux_20;
+				aux_20 <= entrada_Rs(31) & entrada_Rs(19 downto 12) & entrada_Rs(20) & entrada_Rs(30 downto 21);
+				saida <= std_logic_vector(shift_right(unsigned(extensao_12 & aux_20), 1) );  
 		end if;
 	end process;
  	-- todos os bits da extensão correspondem ao bit mais significativo da entrada Rs
