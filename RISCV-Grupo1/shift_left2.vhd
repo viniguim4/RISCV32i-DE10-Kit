@@ -17,5 +17,4 @@ architecture Hardware of shift_left2 is
     begin
         -- Desloca-se 2 bits à esquerda da variável de entrada.
         exit_sll2 <= signal_extend_in(29 downto 0) & "00"; 
-
 end Hardware;
