@@ -15,7 +15,7 @@ entity extensor is
 
 	port (
 		entrada_Rs : in std_logic_vector((largura_dado - 1) downto 0); 		
-		extendop	: in std_logic_vector(1 downto 0);				 
+		extendop	: in std_logic_vector(2 downto 0);				 
 		saida      : out std_logic_vector(31 downto 0)
 	);
 end extensor;
@@ -33,15 +33,17 @@ begin
 	extensao_20 := (others => entrada_Rs(31));
 	tipo_i := (extensao_20 & entrada_Rs(31 downto 20));
 	
-			if (extendop = "00") then   -- instrucao tipo i
-				--extensao_20 <= (others => entrada_Rs(largura_dado - 1));
-				--aux_12 <= entrada_Rs(31 downto 20);
+			if (extendop = "000") then   -- instrucao tipo i
 				saida <= tipo_i;	  					
-			elsif (extendop = "01" ) then --  instrução tipo s			
-				--aux_12 <= entrada_Rs(11 downto 8) & entrada_Rs(30 downto 25) & entrada_Rs(7) & entrada_Rs(31) ; -- 12 bits
+			elsif (extendop = "001" ) then --  instrução tipo b			
 				aux_12 <=  entrada_Rs(31)  & entrada_Rs(7) & entrada_Rs(30 downto 25) & entrada_Rs(11 downto 8);
-				--extensao_20 <= (others => entrada_Rs(11)); --20 bits	
 				saida <= std_logic_vector(shift_right(unsigned(extensao_20 & aux_12), 1) -1  );   
+			elsif (extendop = "010" ) then --  instrução tipo s			
+				aux_12 <=  entrada_Rs(31)  & entrada_Rs(7) & entrada_Rs(30 downto 25) & entrada_Rs(11 downto 8);
+				saida <= std_logic_vector(shift_right(unsigned(extensao_20 & aux_12), 1) );   
+			elsif (extendop = "011" ) then --  instrução tipo u			
+				saida <= entrada_Rs(31 downto 12) &  "000000000000";
+				--saida <= std_logic_vector( shift_left( entrada_Rs(31 downto 12) ,12)) & ;
 			else  --instrucao tipo j -- arrumar
 				extensao_12 <= ((others => entrada_Rs(largura_dado - 1)));
 				aux_20 <= entrada_Rs(31) & entrada_Rs(19 downto 12) & entrada_Rs(20) & entrada_Rs(30 downto 21);

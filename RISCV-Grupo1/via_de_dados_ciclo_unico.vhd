@@ -25,7 +25,7 @@ entity via_de_dados_ciclo_unico is
         branch                                  :   in std_logic;
         --sinal para blocos
         RegWEN, mem_sel                         :   in std_logic;
-        extendop                                :   in  std_logic_vector(1 downto 0);
+        extendop                                :   in  std_logic_vector(2 downto 0);
         ALUOP                                   :   in std_logic_vector(3 downto 0);
         --sinal enviado para o banco de registradores
         load_len                                :   in std_logic_vector(1 downto 0);
@@ -80,7 +80,7 @@ architecture comportamento of via_de_dados_ciclo_unico is
 		);
 		port (
 			entrada_Rs : in std_logic_vector((largura_dado - 1) downto 0); 		
-			extendop	: in std_logic_vector(1 downto 0);				 
+			extendop	: in std_logic_vector(2 downto 0);				 
 			saida      : out std_logic_vector((largura_saida - 1) downto 0)
 		);
 	end component;

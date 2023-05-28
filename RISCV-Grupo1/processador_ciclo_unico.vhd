@@ -34,7 +34,7 @@ architecture comportamento of processador_ciclo_unico is
         branch                                  :   in std_logic;
         --sinal para blocos
         RegWEN, mem_sel                         :   in std_logic;
-        extendop                                :   in std_logic_vector(1 downto 0);
+        extendop                                :   in std_logic_vector(2 downto 0);
         ALUOP                                   :   in std_logic_vector(3 downto 0);
         --sinal enviado para o banco de registradores
         load_len                                :   in std_logic_vector(1 downto 0);
@@ -49,7 +49,7 @@ architecture comportamento of processador_ciclo_unico is
         	funct3      :   in std_logic_vector(14 downto 12);
         	funct7      :   in std_logic_vector(31 downto 25);
 			------------------- Saidas -----------------------
-			extendop 	: out std_logic_vector(1 downto 0);	--
+			extendop 	: out std_logic_vector(2 downto 0);	--
 			RegWEn		: out std_logic;					--
 			load_len	: out std_logic_vector(1 downto 0);	--
 			extend_sel	: out std_logic;					--
@@ -86,7 +86,7 @@ architecture comportamento of processador_ciclo_unico is
 	signal aux_branch                                  : std_logic;
 	--sinal para blocos
 	signal aux_RegWEN, aux_mem_sel                     : std_logic;
-	signal aux_extendop                                : std_logic_vector(1 downto 0);
+	signal aux_extendop                                : std_logic_vector(2 downto 0);
 	signal aux_ALUOP                                   : std_logic_vector(3 downto 0);
 	--sinal enviado para o banco de registradores
 	signal aux_load_len                                : std_logic_vector(1 downto 0);

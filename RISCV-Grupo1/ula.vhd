@@ -85,7 +85,8 @@ begin
                 end if;
             -- tipo u
             when "1110" => --lui
-                resultado_ula <= std_logic_vector(shift_right(signed(entrada_a), 12 ));
+                --resultado_ula <= std_logic_vector(shift_right(signed(entrada_a), 12 ));
+                resultado_ula <= entrada_b;
                 aux <= '0';
 
             -- faz nada

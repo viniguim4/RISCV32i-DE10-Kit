@@ -30,7 +30,7 @@ architecture comportamental of memd is
     signal ram      : data_mem := (others => (others => '0'));
     signal ram_addr : std_logic_vector(MD_ADDR_WIDTH - 1 downto 0);
 begin
-    ram_addr <= adress_mem(MD_ADDR_WIDTH - 1 downto 0);
+    ram_addr <=  adress_mem(MD_ADDR_WIDTH - 1 downto 0)  ;
     process (clk)
     begin
         if (rising_edge(clk)) then
