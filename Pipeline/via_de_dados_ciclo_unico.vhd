@@ -25,7 +25,7 @@ entity via_de_dados_ciclo_unico is
         branch                                  :   in std_logic;
         --sinal para blocos
         RegWEN, mem_sel                         :   in std_logic;
-        extendop                                :   in  std_logic_vector(1 downto 0);
+        extendop                                :   in  std_logic_vector(2 downto 0);
         ALUOP                                   :   in std_logic_vector(3 downto 0);
         --sinal enviado para o banco de registradores
         load_len                                :   in std_logic_vector(1 downto 0);
@@ -80,7 +80,7 @@ architecture comportamento of via_de_dados_ciclo_unico is
 		);
 		port (
 			entrada_Rs : in std_logic_vector((largura_dado - 1) downto 0); 		
-			extend_sel	: in std_logic_vector(1 downto 0);				 
+			extendop	: in std_logic_vector(2 downto 0);				 
 			saida      : out std_logic_vector((largura_saida - 1) downto 0)
 		);
 	end component;
@@ -156,8 +156,8 @@ architecture comportamento of via_de_dados_ciclo_unico is
 	component memd is
 		generic (
 			number_of_words : natural := 512; -- número de words que a sua memória é capaz de armazenar
-			MD_DATA_WIDTH   : natural := 32 -- tamanho da palavra em bits
-			--MD_ADDR_WIDTH   : natural := 11  -- tamanho do endereco da memoria de dados em bits
+			MD_DATA_WIDTH   : natural := 32; -- tamanho da palavra em bits
+			MD_ADDR_WIDTH   : natural := 9  -- tamanho do endereco da memoria de dados em bits
 		);
 		port (
 			clk                 : in std_logic;
@@ -188,7 +188,7 @@ architecture comportamento of via_de_dados_ciclo_unico is
     -- Aqui os sinais repsentam os fios que ligam os componentes. tudo em letra maiuscula 
     -- representa a saida dos controladores.
     -- sinais internos
-    signal aux_saida_pc : std_logic_Vector(31 downto 0);
+   signal aux_saida_pc : std_logic_Vector(31 downto 0);
 	signal aux_saida_memi : std_logic_Vector(31 downto 0);
 	signal aux_saida_data_reg1 : std_logic_Vector(31 downto 0);
 	signal aux_saida_data_reg2 : std_logic_Vector(31 downto 0);
@@ -203,12 +203,15 @@ architecture comportamento of via_de_dados_ciclo_unico is
 	signal aux_saida_addnormal_4 : std_logic_Vector(31 downto 0);
 	signal aux_saida_mux_branch : std_logic_Vector(31 downto 0);
 	signal aux_saida_mux_jump : std_logic_Vector(31 downto 0);
-
+	
 	--sinais de controle
 	signal aux_saida_alu_b : std_logic;
 	signal aux_saida_and : std_logic;
 
 begin
+	funct3 <= aux_saida_memi(14 downto 12);
+	funct7 <= aux_saida_memi(31 downto 25);
+	opcode <= aux_saida_memi(6 downto 0);
 
 	instancia_pc : component pc
 	port map(
@@ -255,8 +258,8 @@ begin
 
 	instancia_mux21_jal : component mux21
 	port map(
-		dado_ent_0 => aux_saida_addnormal_4,
-		dado_ent_1 => aux_saida_mux_branch,
+		dado_ent_0 => aux_saida_mux_branch,
+		dado_ent_1 => aux_saida_addnormal_4,
         sele_ent  =>    jal,
         dado_sai  =>  aux_saida_mux_jump
 	);
@@ -291,7 +294,7 @@ begin
 	instancia_extensor : component extensor
 	port map(
 		entrada_Rs  => aux_saida_memi,
-		extend_sel  => extendop,
+		extendop  => extendop,
 		saida => aux_saida_extensor
 	);
 
@@ -332,4 +335,8 @@ begin
         dado_sai  =>  aux_saida_mux41
 	);
 
+	funct3 <= aux_saida_memi(14 downto 12);
+	funct7 <= aux_saida_memi(31 downto 25);
+	opcode <= aux_saida_memi(6 downto 0);
+	
 end architecture comportamento;

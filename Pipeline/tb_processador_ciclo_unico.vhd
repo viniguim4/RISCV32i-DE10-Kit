@@ -35,16 +35,16 @@ begin
 	begin
 		wait for OFFSET;
 		CLOCK_LOOP : loop
-			clock <= '0';
-			wait for (PERIODO - (PERIODO * DUTY_CYCLE));
 			clock <= '1';
+			wait for (PERIODO - (PERIODO * DUTY_CYCLE));
+			clock <= '0';
 			wait for (PERIODO * DUTY_CYCLE);
 		end loop CLOCK_LOOP;
 	end process gera_clock;
 	-- processo para gerar o estimulo de reset		
 	gera_reset : process
 	begin
-		reset <= '0';
+		reset <= '1';
 		for i in 1 to 2 loop
 			wait until rising_edge(clock);
 		end loop;

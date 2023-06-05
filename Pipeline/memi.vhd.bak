@@ -23,15 +23,23 @@ end entity;
 architecture comportamental of memi is
 	type rom_type is array (0 to 2 ** 11 - 1) of std_logic_vector(INSTR_WIDTH - 1 downto 0);
 	--signal aux : std_logic_vector(32 downto 0);
-	constant codigo : rom_type := (
-		0 =>     "00000001010001011000010100010011",
-		1 =>     "00000000000000010100010100110111",
-		2 =>     "00000000101000000000011000110011",
-		others =>     X"00000000");
-
-	signal index : std_logic_vector(31 downto 0):= "00000000000000000000000000000000";
-        begin
-					index(29 downto 0)<= Endereco(31 downto 2);
-					instrucao <= codigo(to_integer(unsigned(index))) when Endereco < x"10000000" else x"00000000";
-
+	signal rom : rom_type;
+begin
+	process (clk, reset) is
+	begin
+		if (rising_edge(clk)) then
+			if (reset = '1') then
+				rom <= (
+					0      => X"0200", -- exemplo de uma instrução qualquer de 16 bits (4 símbos em hexadecimal)
+					1      => X"4302", -- exemplo de uma instrução qualquer de 16 bits (4 símbos em hexadecimal)
+					2      => X"C423", -- exemplo de uma instrução qualquer de 16 bits (4 símbos em hexadecimal)
+					3      => X"2144", -- exemplo de uma instrução qualquer de 16 bits (4 símbos em hexadecimal)
+					others => X"0000"  -- exemplo de uma instrução qualquer de 16 bits (4 símbos em hexadecimal)
+					);
+			else
+				-- aux <= Endereco & '0';
+				Instrucao <= rom(to_integer(unsigned(Endereco)));
+			end if;
+		end if;
+	end process;
 end comportamental;
