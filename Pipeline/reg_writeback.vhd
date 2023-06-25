@@ -9,13 +9,13 @@ use ieee.std_logic_1164.all;
 entity reg_writeback is
     port (
         i_memd: in std_logic_vector(31 downto 0);   
-        i_reg_mem_alu: in std_logic_vector(31 downto 0);  
-        i_reg_mem_write_Reg : in std_logic_vector(31 downto 0);  
+        i_ALUoutW: in std_logic_vector(31 downto 0);  
+        i_WriteRegW: in std_logic_vector(31 downto 0);  
         clk         : in std_logic;
        
         o_memd: out std_logic_vector(31 downto 0);  
-        o_reg_mem_alu : out std_logic_vector(31 downto 0);  
-        o_reg_mem_write_Reg : out std_logic_vector(31 downto 0);  
+        o_ALUoutW : out std_logic_vector(31 downto 0);  
+        o_WriteRegW : out std_logic_vector(31 downto 0);  
 
         --sinais de controle
 
@@ -37,8 +37,8 @@ begin
     begin
         if (rising_edge(clk) ) then
             o_memd <= i_memd;
-            o_reg_mem_alu   <= i_reg_mem_alu;
-            o_reg_mem_write_Reg     <= i_reg_mem_write_Reg;       
+            o_ALUoutW   <= i_ALUoutW;
+            o_WriteRegW     <= i_WriteRegW;       
             o_MUX_final <= i_MUX_final;          
             o_RegWEN  <= i_RegWEN;       
             o_load_len      <= i_load_len;  

@@ -7,33 +7,14 @@
 library IEEE;
 use IEEE.std_logic_1164.all;
 
-entity via_de_dados_ciclo_unico is
+entity pipeline is
 	port (
-		--nosso
 		clock     : in std_logic;
-		reset     : in std_logic;
-
-		-- entradas
-        opcode                                  :   out std_logic_vector(6 downto 0);
-        funct3                                  :   out std_logic_vector(14 downto 12);
-        funct7                                  :   out std_logic_vector(31 downto 25);
-        --saidas
-        --sinais enviados para multiplexadores
-        extend_sel, jal                         :   in std_logic;
-        MUX_final                               :   in std_logic_vector(1 downto 0);
-        --sinal para instrucao b
-        branch                                  :   in std_logic;
-        --sinal para blocos
-        RegWEN, mem_sel                         :   in std_logic;
-        extendop                                :   in  std_logic_vector(2 downto 0);
-        ALUOP                                   :   in std_logic_vector(3 downto 0);
-        --sinal enviado para o banco de registradores
-        load_len                                :   in std_logic_vector(1 downto 0);
-        store_len                               :   in std_logic_vector(1 downto 0)   
+		reset     : in std_logic
 	);
-end entity via_de_dados_ciclo_unico;
+end entity pipeline;
 
-architecture comportamento of via_de_dados_ciclo_unico is
+architecture comportamento of pipeline is
 
 	-- declare todos os componentes que serão necessários na sua via_de_dados_ciclo_unico a partir deste comentário
 	component pc is
@@ -44,7 +25,7 @@ architecture comportamento of via_de_dados_ciclo_unico is
 			entrada : in std_logic_vector(pc_width - 1 downto 0);
 			saida   : out std_logic_vector(pc_width - 1 downto 0);
 			clk     : in std_logic;
-			reset   : in std_logic
+			reset, stall_pc   : in std_logic
 		);
 	end component;
 
@@ -122,8 +103,6 @@ architecture comportamento of via_de_dados_ciclo_unico is
 			sai_Reg1_dado : out std_logic_vector((largura_dado - 1) downto 0);
 			sai_Reg2_dado : out std_logic_vector((largura_dado - 1) downto 0);
 			clk, RegWEN     : in std_logic;
-			--sinal do tamanho do dado
-			--para diferenciar lw,lh e lb
 			data_len_breg    : in std_logic_vector(1 downto 0)
 		);
 	end component;
@@ -139,8 +118,7 @@ architecture comportamento of via_de_dados_ciclo_unico is
 			entrada_b : in std_logic_vector((largura_dado - 1) downto 0);
 			seletor   : in std_logic_vector(3 downto 0);  -- é o aluoop
 			--saida
-			saida     : out std_logic_vector((largura_dado - 1) downto 0);
-			b         : out std_logic
+			saida     : out std_logic_vector((largura_dado - 1) downto 0)
 		);
 	end component;
 
@@ -184,38 +162,264 @@ architecture comportamento of via_de_dados_ciclo_unico is
 		);
 	end component;
 
+	component reg_decod is
+		port (
+			entrada_memi    : in std_logic_vector(31 downto 0);
+			entrada_pc4    : in std_logic_vector(31 downto 0);
+			clk, flush_dec      : in std_logic;
+			stall_dec        : in std_logic;
+			saida_memi    : out std_logic_vector(31 downto 0);
+			saida_pc4     : out std_logic_vector(31 downto 0)
+		);
+	end component;
 
+	component reg_exe is 
+		port(
+			Rs1D : in std_logic_vector(4 downto 0);    -- (19 - 15)
+			Rs2D  : in std_logic_vector(4 downto 0);    -- (24 - 20)
+			RdD : in std_logic_vector(4 downto 0);     -- (11 - 7)
+			clk         : in std_logic;
+			flush_exe         : in std_logic;
+			entrada_sinal_extend : in std_logic_vector(31 downto 0);
+			entra_Reg1_dado : in std_logic_vector(31 downto 0);
+			entra_Reg2_dado : in std_logic_vector(31 downto 0);
+
+			Rs1E : out std_logic_vector(4 downto 0);    -- (19 - 15)
+			Rs2E : out std_logic_vector(4 downto 0);    -- (24 - 20)
+			RdE : out std_logic_vector(4 downto 0);     -- (11 - 7)
+			sai_Reg1_dado : out std_logic_vector(31 downto 0);
+			sai_Reg2_dado : out std_logic_vector(31 downto 0);
+			sai_sinal_extend : out std_logic_vector(31 downto 0);
+
+			--sinais de controle
+			--sinais enviados para multiplexadores
+			i_extend_sel                        :   in std_logic;
+			i_MUX_final                               :   in std_logic_vector(1 downto 0);
+			--sinal para blocos
+			i_RegWEN, i_mem_sel                         :   in std_logic;
+			i_extendop                               :   in  std_logic_vector(2 downto 0);
+			i_ALUOP                                   :   in std_logic_vector(3 downto 0);
+			--sinal enviado para o banco de registradores
+			i_load_len                                :   in std_logic_vector(1 downto 0);
+			i_store_len                               :   in std_logic_vector(1 downto 0);   
+
+			o_extend_sel                               :   out std_logic;
+			o_MUX_final                               :   out std_logic_vector(1 downto 0);
+
+			--sinal para blocos
+			o_RegWEN, o_mem_sel                         :   out std_logic;
+			o_extendop                               :   out  std_logic_vector(2 downto 0);
+			o_ALUOP                                   :   out std_logic_vector(3 downto 0);
+			--sinal enviado para o banco de registradores
+			o_load_len                                :   out std_logic_vector(1 downto 0);
+			o_store_len                               :   out std_logic_vector(1 downto 0)   
+		);
+	end component;
+
+	component reg_memd is
+		port (
+			i_alu: in std_logic_vector(31 downto 0);   
+			i_WriteDataE : in std_logic_vector(31 downto 0);  
+			i_WriteRegE : in std_logic_vector(31 downto 0);  
+			clk         : in std_logic;
+		
+			o_alu: out std_logic_vector(31 downto 0);  
+			o_WriteDataM  : out std_logic_vector(31 downto 0);  
+			o_WriteRegM  : out std_logic_vector(31 downto 0);  
+
+			--sinais de controle
+			--sinais enviados para multiplexadores
+
+			i_MUX_final                               :   in std_logic_vector(1 downto 0);
+			--sinal para blocos
+			i_RegWEN, i_mem_sel                         :   in std_logic;
+			--sinal enviado para o banco de registradores
+			i_load_len                                :   in std_logic_vector(1 downto 0);
+			i_store_len                               :   in std_logic_vector(1 downto 0);   
+
+			o_MUX_final                               :   out std_logic_vector(1 downto 0);
+			--sinal para blocos
+			o_RegWEN, o_mem_sel                         :   out std_logic;
+			--sinal enviado para o banco de registradores
+			o_load_len                                :   out std_logic_vector(1 downto 0);
+			o_store_len                               :   out std_logic_vector(1 downto 0)   
+		);
+	end component;
+
+	component reg_writeback is
+		port (
+			i_memd: in std_logic_vector(31 downto 0);   
+			i_ALUoutW: in std_logic_vector(31 downto 0);  
+			i_WriteRegW : in std_logic_vector(31 downto 0);  
+			clk         : in std_logic;
+		
+			o_memd: out std_logic_vector(31 downto 0);  
+			o_ALUoutW  : out std_logic_vector(31 downto 0);  
+			o_WriteRegW  : out std_logic_vector(31 downto 0);  
+
+			--sinais de controle
+
+			i_MUX_final                               :   in std_logic_vector(1 downto 0);
+			i_RegWEN                       :   in std_logic;
+			i_load_len                                :   in std_logic_vector(1 downto 0);
+
+			o_MUX_final                               :   out std_logic_vector(1 downto 0);
+			o_RegWEN                        :   out std_logic;
+			o_load_len                                :   out std_logic_vector(1 downto 0)
+		);
+	end component;
+
+	component HazardUnit is
+		port (
+			-- entradas da vinda da controladora
+			branch : in std_logic;
+			jal : in std_logic;
+			instrucao : in std_logic_vector(31 downto 0);  -- vai usar opcode e funct3 
+			--entradas vinda do reg dec (nada)
+		
+			-- entradas vinda do reg exec
+			RegWEN__exe, MUX_final_exe : in std_logic; --(men_sel = Menwrite) (RegWEN = RegWrite)
+			Rs1D, Rs2D : in std_logic_vector(4 downto 0);
+			Rs1E, Rs2E : in std_logic_vector(4 downto 0);
+			--entrada vinda do reg mem
+			RegWEN__mem, MUX_final_mem: in std_logic;
+			WriteRegE, WriteRegM : in std_logic_vector(4 downto 0);
+		
+			-- entradas vinda dp reg wb
+			RegWEN__wb : in std_logic;
+			WriteRegW : in std_logic_vector(4 downto 0);
+		
+			--saidas
+			stall_pc : out std_logic ;
+		
+			flush_dec, stall_dec : out std_logic;
+			forwardAD, forwardBD : out  std_logic_vector(1 downto 0);
+		
+			flush_exe : out std_logic;
+			forwardAE, forwardBE : out  std_logic_vector(1 downto 0)
+		);
+	end component;
+
+	component branch is
+		port (
+			--entrada 
+			entrada_a : in std_logic_vector(31 downto 0);
+			entrada_b : in std_logic_vector(31 downto 0);
+			seletor   : in std_logic_vector(3 downto 0);  -- é o aluoop
+			--saida
+			pcSrcD     : out std_logic
+		);
+	end component;
+	
+	
+	component Controlador is
+		port (
+			------------------- Entradas ---------------------
+			opcode      :   in std_logic_vector(6 downto 0);
+        	funct3      :   in std_logic_vector(14 downto 12);
+        	funct7      :   in std_logic_vector(31 downto 25);
+			------------------- Saidas -----------------------
+			extendop 	: out std_logic_vector(2 downto 0);	--
+			RegWEn		: out std_logic;					--
+			load_len	: out std_logic_vector(1 downto 0);	--
+			extend_sel	: out std_logic;					--
+			ALUOP		: out std_logic_vector(3 downto 0);	--
+			branch		: out std_logic;					--
+			JAL			: out std_logic;					--
+			mem_sel		: out std_logic;					--
+			MUX_final	: out std_logic_vector(1 downto 0);	--
+			store_len	: out std_logic_vector(1 downto 0)	--
+			--------------------------------------------------
+		);
+	end component;
+	
     -- Aqui os sinais repsentam os fios que ligam os componentes. tudo em letra maiuscula 
     -- representa a saida dos controladores.
     -- sinais internos
-   signal aux_saida_pc : std_logic_Vector(31 downto 0);
+   	signal aux_saida_pc : std_logic_Vector(31 downto 0);
 	signal aux_saida_memi : std_logic_Vector(31 downto 0);
+	signal aux_saida_regD : std_logic_Vector(31 downto 0);
+	signal aux_saida_regD_inst : std_logic_Vector(31 downto 0);
+	signal aux_saida_regD_pc4 : std_logic_Vector(31 downto 0);
 	signal aux_saida_data_reg1 : std_logic_Vector(31 downto 0);
 	signal aux_saida_data_reg2 : std_logic_Vector(31 downto 0);
 	signal aux_saida_extensor : std_logic_Vector(31 downto 0);
-	signal aux_saida_mux21_extend : std_logic_Vector(31 downto 0);
-	signal aux_saida_alu : std_logic_Vector(31 downto 0);
-	signal aux_saida_memd : std_logic_Vector(31 downto 0);
-	signal aux_saida_mux41 : std_logic_Vector(31 downto 0);
-	signal aux_saida_adder4 : std_logic_Vector(31 downto 0);
+	signal aux_saida_mux1 : std_logic_Vector(31 downto 0);
+	signal aux_saida_mux2 : std_logic_Vector(31 downto 0);
+	signal aux_saida_branch : std_logic;
 	signal aux_saida_sll2 : std_logic_Vector(31 downto 0);
-	signal aux_saida_addnormal_sleft : std_logic_Vector(31 downto 0);
-	signal aux_saida_addnormal_4 : std_logic_Vector(31 downto 0);
+	signal aux_saida_regE_Rs1E : std_logic_Vector(31 downto 0);
+	signal aux_saida_regE_Rs2E : std_logic_Vector(31 downto 0);
+	signal aux_saida_regE_RdE : std_logic_Vector(31 downto 0);
+	signal aux_saida_regE_Reg1_dado : std_logic_Vector(31 downto 0);
+	signal aux_saida_regE_Reg2_dado : std_logic_Vector(31 downto 0);
+	signal aux_saida_regE_sinal_extend : std_logic_Vector(31 downto 0);
+	signal aux_saida_regE_extend_sel  : std_logic;
+	signal aux_saida_regE_MUX_final   : std_logic_Vector(1 downto 0);
+	signal aux_saida_regE_RegWEN   : std_logic;
+	signal aux_saida_regE_mem_sel   : std_logic;
+	signal aux_saida_regE_extendop   : std_logic_vector(2 downto 0);
+	signal aux_saida_regE_ALUOP  : std_logic_vector(3 downto 0);
+	signal aux_saida_regE_load_len  : std_logic_vector(1 downto 0);
+	signal aux_saida_regE_store_len  : std_logic_vector(1 downto 0);
+	signal aux_saida_mux3 : std_logic_Vector(31 downto 0);
+	signal aux_saida_mux4 : std_logic_Vector(31 downto 0);
+	signal aux_saida_mux5 : std_logic_Vector(31 downto 0);
+	signal aux_saida_mux6 : std_logic_Vector(31 downto 0);
+	signal aux_saida_alu : std_logic_Vector(31 downto 0);
+	signal aux_saida_regM_alu: std_logic_Vector(31 downto 0);
+	signal aux_saida_regM_WriteDataM : std_logic_Vector(31 downto 0);
+	signal aux_saida_regM_WriteRegM : std_logic_Vector(31 downto 0);
+	signal aux_saida_regM_MUX_final   : std_logic_Vector(1 downto 0);
+	signal aux_saida_regM_RegWEN   : std_logic;
+	signal aux_saida_regM_mem_sel   : std_logic;
+	signal aux_saida_regM_load_len  : std_logic_vector(1 downto 0);
+	signal aux_saida_regM_store_len  : std_logic_vector(1 downto 0);
+	signal aux_saida_memd : std_logic_Vector(31 downto 0);
+	signal aux_saida_regWB_memd : std_logic_Vector(31 downto 0);
+	signal aux_saida_regWB_ALUoutW  : std_logic_Vector(31 downto 0);
+	signal aux_saida_regWB_WriteRegW : std_logic_Vector(31 downto 0);
+	signal aux_saida_regWB_MUX_final   : std_logic_Vector(1 downto 0);
+	signal aux_saida_regWB_RegWEN   : std_logic;
+	signal aux_saida_regWB_load_len  : std_logic_vector(1 downto 0);
+	signal aux_saida_mux7 : std_logic_Vector(31 downto 0);
+	signal aux_saida_adder4 : std_logic_Vector(31 downto 0);
+	signal aux_saida_addnormal_cima : std_logic_Vector(31 downto 0);
+	signal aux_saida_addnormal_baixo : std_logic_Vector(31 downto 0);
 	signal aux_saida_mux_branch : std_logic_Vector(31 downto 0);
 	signal aux_saida_mux_jump : std_logic_Vector(31 downto 0);
 	
 	--sinais de controle
-	signal aux_saida_alu_b : std_logic;
-	signal aux_saida_and : std_logic;
+	signal aux_saida_control_extend_sel : std_logic;
+	signal aux_saida_control_jal : std_logic;
+	signal aux_saida_control_MUX_final : std_logic_vector(1 downto 0);
+	signal aux_saida_control_branch  : std_logic;
+	signal aux_saida_control_RegWEN  : std_logic;
+	signal aux_saida_control_mem_sel  : std_logic;
+	signal aux_saida_control_extendop  : std_logic_vector(2 downto 0);
+	signal aux_saida_control_ALUOP   : std_logic_vector(3 downto 0);
+	signal aux_saida_control_load_len  : std_logic_vector(1 downto 0);
+	signal aux_saida_control_store_len   :std_logic_vector(1 downto 0);
+
+	--sinais hazard
+	signal aux_saida_hazard_stall_pc : std_logic;
+	signal aux_saida_hazard_flush_dec : std_logic;
+	signal aux_saida_hazard_stall_dec : std_logic;
+	signal aux_saida_hazard_flush_exe : std_logic;
+	signal aux_saida_hazard_forwardAD : std_logic_vector(1 downto 0);
+	signal aux_saida_hazard_forwardBD : std_logic_vector(1 downto 0);
+	signal aux_saida_hazard_forwardBE : std_logic_vector(1 downto 0);
+	signal aux_saida_hazard_forwardAE : std_logic_vector(1 downto 0);
 
 begin
-	funct3 <= aux_saida_memi(14 downto 12);
-	funct7 <= aux_saida_memi(31 downto 25);
-	opcode <= aux_saida_memi(6 downto 0);
+	--funct3 <= aux_saida_memi(14 downto 12);
+	--funct7 <= aux_saida_memi(31 downto 25);
+	--opcode <= aux_saida_memi(6 downto 0);
 
 	instancia_pc : component pc
 	port map(
 		entrada => aux_saida_mux_jump,
+		stall_pc => aux_saida_hazard_stall_pc,
 		saida   => aux_saida_pc,
 		clk     => clock,
 		reset   => reset
@@ -227,18 +431,18 @@ begin
 		adder4_out =>    aux_saida_adder4
 	);
 	
-	instancia_adder_normal_sll : component Adder_normal
+	instancia_adder_normal_cima : component Adder_normal
 	port map(
 		adder_in1	 =>	aux_saida_adder4,
 		adder_in2 => aux_saida_sll2,
-		adder_out =>    aux_saida_addnormal_sleft
+		adder_out =>   aux_saida_addnormal_cima 
 	);
 
-	instancia_adder_normal_pc : component Adder_normal
+	instancia_adder_normal_baixo : component Adder_normal
 	port map(
-		adder_in1	 =>	aux_saida_pc,
+		adder_in1	 =>	aux_saida_regD_pc4,
 		adder_in2 => aux_saida_sll2,
-		adder_out =>    aux_saida_addnormal_4
+		adder_out =>   aux_saida_addnormal_baixo
 	);
 
 	instancia_and : component and_port

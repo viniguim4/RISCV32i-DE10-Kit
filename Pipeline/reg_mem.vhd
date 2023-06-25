@@ -9,13 +9,13 @@ use ieee.std_logic_1164.all;
 entity reg_mem is
     port (
         i_alu: in std_logic_vector(31 downto 0);   
-        i_mux_write_data : in std_logic_vector(31 downto 0);  
-        i_mux_write_Reg : in std_logic_vector(31 downto 0);  
+        i_WriteDataE : in std_logic_vector(31 downto 0);  
+        i_WriteRegE : in std_logic_vector(31 downto 0);  
         clk         : in std_logic;
        
         o_alu: out std_logic_vector(31 downto 0);  
-        o_mux_write_data : out std_logic_vector(31 downto 0);  
-        o_mux_write_Reg : out std_logic_vector(31 downto 0);  
+        o_WriteDataM : out std_logic_vector(31 downto 0);  
+        o_WriteRegM  : out std_logic_vector(31 downto 0);  
 
         --sinais de controle
          --sinais enviados para multiplexadores
@@ -43,8 +43,8 @@ begin
     begin
         if (rising_edge(clk) ) then
             o_alu <= i_alu;
-            o_mux_write_data <= i_mux_write_data;
-            o_mux_write_Reg     <= i_mux_write_Reg;
+            o_WriteDataM <= i_WriteDataE;
+            o_WriteRegM     <=  o_WriteRegM;
             o_MUX_final     <= i_MUX_final;        
 
             o_RegWEN     <= i_RegWEN;       

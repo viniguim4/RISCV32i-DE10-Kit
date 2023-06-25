@@ -20,7 +20,6 @@ entity ula is
         seletor   : in std_logic_vector(3 downto 0);  -- é o aluoop
         --saida
         saida     : out std_logic_vector((largura_dado - 1) downto 0);
-        b         : out std_logic
     );
 end ula;
 
@@ -66,23 +65,6 @@ begin
             when "1001" => -- or
                 resultado_ula <= entrada_a or entrada_b;
                 aux <= '0';
-            -- tipo b
-            when "1011" => --beq
-                resultado_ula <= std_logic_vector(signed(entrada_a) - signed(entrada_b));
-                if(entrada_a = entrada_b) then aux <= '1';
-					 resultado_ula <= x"00000000";
-                else aux <= '0';
-                end if;
-            when "1100" => --blt
-                resultado_ula <= std_logic_vector(signed(entrada_a) - signed(entrada_b));
-                if(entrada_a < entrada_b) then aux <= '1';
-                else aux <= '0';
-                end if;
-            when "1101" => --bge
-                resultado_ula <= std_logic_vector(signed(entrada_a) - signed(entrada_b));
-                if(entrada_a >= entrada_b) then aux <= '1';
-                else aux <= '0';
-                end if;
             -- tipo u
             when "1110" => --lui
                 --resultado_ula <= std_logic_vector(shift_right(signed(entrada_a), 12 ));

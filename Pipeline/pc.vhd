@@ -19,8 +19,20 @@ entity pc is
 end entity;
 
 architecture comportamental of pc is
-	
-begin
+	begin
+		process (clk, reset)
+		begin
+		if (reset = '1') then
+			saida <= (others => '0');
+		elsif rising_edge(clk) then
+			if( stall_pc = '0') then -- Only update if not stalled
+			saida <= entrada;
+			end if;
+		end if;
+		end process;
+end comportamental;
+
+/*
 	process (clk, reset) is
 	begin		
 		if (rising_edge(clk)) then
@@ -29,8 +41,9 @@ begin
 			elsif(stall_pc = '0') then
 				saida <= entrada;
 			elsif( stall_pc = '1') then
+				saida <= entrada;
 				wait until (falling_edge(clk));
 			end if;
 		end if;
 	end process;
-end comportamental;
+*/
