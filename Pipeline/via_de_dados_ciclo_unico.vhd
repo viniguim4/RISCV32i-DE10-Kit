@@ -216,7 +216,7 @@ architecture comportamento of pipeline is
 		);
 	end component;
 
-	component reg_memd is
+	component reg_mem is
 		port (
 			i_alu: in std_logic_vector(31 downto 0);   
 			i_WriteDataE : in std_logic_vector(31 downto 0);  
@@ -293,7 +293,7 @@ architecture comportamento of pipeline is
 			stall_pc : out std_logic ;
 		
 			flush_dec, stall_dec : out std_logic;
-			forwardAD, forwardBD : out  std_logic_vector(1 downto 0);
+			forwardAD, forwardBD : out  std_logic;
 		
 			flush_exe : out std_logic;
 			forwardAE, forwardBE : out  std_logic_vector(1 downto 0)
@@ -364,7 +364,6 @@ architecture comportamento of pipeline is
 	signal aux_saida_regE_store_len  : std_logic_vector(1 downto 0);
 	signal aux_saida_mux3 : std_logic_Vector(31 downto 0);
 	signal aux_saida_mux4 : std_logic_Vector(31 downto 0);
-	signal aux_saida_mux5 : std_logic_Vector(31 downto 0);
 	signal aux_saida_mux6 : std_logic_Vector(31 downto 0);
 	signal aux_saida_alu : std_logic_Vector(31 downto 0);
 	signal aux_saida_regM_alu: std_logic_Vector(31 downto 0);
@@ -406,10 +405,12 @@ architecture comportamento of pipeline is
 	signal aux_saida_hazard_flush_dec : std_logic;
 	signal aux_saida_hazard_stall_dec : std_logic;
 	signal aux_saida_hazard_flush_exe : std_logic;
-	signal aux_saida_hazard_forwardAD : std_logic_vector(1 downto 0);
-	signal aux_saida_hazard_forwardBD : std_logic_vector(1 downto 0);
+	signal aux_saida_hazard_forwardAD : std_logic;
+	signal aux_saida_hazard_forwardBD : std_logic;
 	signal aux_saida_hazard_forwardBE : std_logic_vector(1 downto 0);
 	signal aux_saida_hazard_forwardAE : std_logic_vector(1 downto 0);
+	--sinais a mais
+	signal aux_saida_and : std_logic;
 
 begin
 	--funct3 <= aux_saida_memi(14 downto 12);
@@ -442,36 +443,38 @@ begin
 	port map(
 		adder_in1	 =>	aux_saida_regD_pc4,
 		adder_in2 => aux_saida_sll2,
-		adder_out =>   aux_saida_addnormal_baixo
+		adder_out =>   aux_saida_addnormal_baixo 
+	);
+
+	instancia_mux_branch : component mux21
+	port map(
+		dado_ent_0 => aux_saida_regD_pc4,
+		dado_ent_1 => aux_saida_addnormal_baixo,
+        sele_ent  =>    aux_saida_and,
+        dado_sai  =>   aux_saida_mux_branch
+	);
+
+	instancia_mux_jal : component mux21
+	port map(
+		dado_ent_0 => aux_saida_mux_branch,
+		dado_ent_1 => aux_saida_addnormal_cima,
+        sele_ent  =>  aux_saida_control_jal,
+        dado_sai  =>  aux_saida_mux_jump
+	);
+
+	instancia_branch : component branch
+	port map (
+		entrada_a =>aux_saida_mux1,
+		entrada_b =>aux_saida_mux2,
+		seletor   =>aux_saida_control_ALUOP,
+		pcSrcD    =>aux_saida_branch
 	);
 
 	instancia_and : component and_port
 	port map(
-        entrada1   =>   aux_saida_alu_b ,
-        entrada2   =>  branch,
+        entrada1   =>  aux_saida_branch   ,
+        entrada2   =>  aux_saida_control_branch,
         saida   =>   aux_saida_and
-	);
-
-	instancia_mux21_branch : component mux21
-	port map(
-		dado_ent_0 => aux_saida_adder4,
-		dado_ent_1 => aux_saida_addnormal_sleft,
-        sele_ent  =>    aux_saida_and,
-        dado_sai  =>  aux_saida_mux_branch 
-	);
-
-	instancia_mux21_jal : component mux21
-	port map(
-		dado_ent_0 => aux_saida_mux_branch,
-		dado_ent_1 => aux_saida_addnormal_4,
-        sele_ent  =>    jal,
-        dado_sai  =>  aux_saida_mux_jump
-	);
-
-	instancia_sll2 : component shift_left2
-	port map(
-		signal_extend_in  => aux_saida_extensor,
-		exit_sll2  => aux_saida_sll2
 	);
 
 	instancia_memi : component memi
@@ -482,65 +485,264 @@ begin
 		Instrucao => aux_saida_memi
 	);
 
+	instancia_regD : component reg_decod
+	port map(
+        entrada_memi   =>aux_saida_memi,
+        entrada_pc4    =>aux_saida_adder4,
+        clk => clock,
+		flush_dec   =>  aux_saida_hazard_flush_dec,
+        stall_dec   =>aux_saida_hazard_stall_dec ,
+        saida_memi  => aux_saida_regD_inst,
+        saida_pc4   =>aux_saida_regD_pc4
+	);
+
 	instancia_banco_reg : component banco_registradores
 	port map(
-		ent_Rs1_ende => aux_saida_memi(19 downto 15),
-        ent_Rs2_ende => aux_saida_memi(24 downto 20),
-        ent_Rd_ende => aux_saida_memi(11 downto 7),
-        write_data_reg => aux_saida_mux41,
+		ent_Rs1_ende => aux_saida_regD_pc4(19 downto 15),
+        ent_Rs2_ende => aux_saida_regD_pc4(24 downto 20),
+        ent_Rd_ende => aux_saida_regD_pc4(11 downto 7),
+        write_data_reg => aux_saida_mux7,
         sai_Reg1_dado => aux_saida_data_reg1,
         sai_Reg2_dado => aux_saida_data_reg2,
         clk    => clock,
-		RegWEN => RegWEN,
-        data_len_breg => load_len
+		RegWEN => aux_saida_regWB_RegWEN,
+        data_len_breg => aux_saida_regWB_load_len
 	);
 
 	instancia_extensor : component extensor
 	port map(
-		entrada_Rs  => aux_saida_memi,
-		extendop  => extendop,
+		entrada_Rs  => aux_saida_regD_pc4,
+		extendop  => aux_saida_control_extendop,
 		saida => aux_saida_extensor
 	);
 
-	instancia_mux21_extend : component mux21
+	instancia_sll2 : component shift_left2
 	port map(
+		signal_extend_in  => aux_saida_extensor,
+		exit_sll2  => aux_saida_sll2
+	);
+
+	instancia_mux1 : component mux21
+	port map (
+		dado_ent_0 => aux_saida_data_reg1,
+		dado_ent_1 => aux_saida_regM_alu,
+		sele_ent  => aux_saida_hazard_forwardAD,
+		dado_sai  => aux_saida_mux1
+	);
+
+	instancia_mux2 : component mux21
+	port map (
 		dado_ent_0 => aux_saida_data_reg2,
-		dado_ent_1 => aux_saida_extensor,
-        sele_ent  => extend_sel,
-        dado_sai  =>  aux_saida_mux21_extend
+		dado_ent_1 => aux_saida_regM_alu,
+		sele_ent  => aux_saida_hazard_forwardBD,
+		dado_sai  => aux_saida_mux2
+	);
+
+	instancia_regE : component reg_exe
+	port map (
+		Rs1D => aux_saida_regD_pc4(19 downto 15),
+        Rs2D => aux_saida_regD_pc4(24 downto 20),
+        RdD =>aux_saida_regD_pc4(11 downto 7),
+        clk  =>clock,
+        flush_exe => aux_saida_hazard_flush_exe, 
+        entrada_sinal_extend => aux_saida_extensor,
+        entra_Reg1_dado => aux_saida_data_reg1,
+        entra_Reg2_dado =>aux_saida_data_reg2,
+        Rs1E =>aux_saida_regE_Rs1E,
+        Rs2E =>aux_saida_regE_Rs2E,
+        RdE =>aux_saida_regE_RdE,
+        sai_Reg1_dado =>aux_saida_regE_Reg1_dado,
+        sai_Reg2_dado =>aux_saida_regE_Reg2_dado,
+        sai_sinal_extend =>aux_saida_regE_sinal_extend ,
+
+        --sinais de controle
+        --sinais enviados para multiplexadores
+        i_extend_sel    =>aux_saida_control_extend_sel,
+        i_MUX_final    =>aux_saida_control_MUX_final,
+        --sinal para blocos
+        i_RegWEN =>aux_saida_control_RegWEN ,
+		 i_mem_sel   =>  aux_saida_control_mem_sel,           
+        i_extendop   =>  aux_saida_control_extendop,          
+        i_ALUOP     =>  aux_saida_control_ALUOP,                    
+        --sinal enviado para o banco de registradores
+        i_load_len  => aux_saida_control_load_len,               
+        i_store_len=>    aux_saida_control_store_len ,                   
+
+        o_extend_sel         =>  aux_saida_regE_extend_sel,          
+        o_MUX_final       =>    aux_saida_regE_MUX_final,                
+
+        --sinal para blocos
+        o_RegWEN =>aux_saida_regE_RegWEN,
+		o_mem_sel       =>    aux_saida_regE_mem_sel,                
+        o_extendop  =>      aux_saida_regE_extendop  ,                 
+        o_ALUOP     =>       aux_saida_regE_ALUOP,                       
+        --sinal enviado para o banco de registradores
+        o_load_len  =>   aux_saida_regE_load_len,                         
+        o_store_len   =>  aux_saida_regE_store_len  
+	);
+
+	instancia_mux3 : component mux41
+	port map(
+		dado_ent_0 => aux_saida_regE_Reg1_dado,
+		dado_ent_1 => aux_saida_mux7,
+		dado_ent_2 => aux_saida_regE_ALUOP,
+		dado_ent_3 => open, -- nao usar
+        sele_ent  => aux_saida_hazard_forwardAE,
+        dado_sai  =>  aux_saida_mux3
+	);
+
+	instancia_mux4 : component mux41
+	port map(
+		dado_ent_0 => aux_saida_regE_Reg2_dado,
+		dado_ent_1 => aux_saida_mux7,
+		dado_ent_2 => aux_saida_regE_ALUOP,
+		dado_ent_3 => open, -- nao usar
+        sele_ent  => aux_saida_hazard_forwardBE,
+        dado_sai  =>  aux_saida_mux4
+	);
+
+	instancia_mux6: component mux21
+	port map(
+		dado_ent_0 => aux_saida_mux4,
+		dado_ent_1 => aux_saida_regE_sinal_extend ,
+        sele_ent  => aux_saida_regE_mem_sel,
+        dado_sai  =>  aux_saida_mux6
 	);
 
 	instancia_alu: component ula
 	port map(
-		entrada_a => aux_saida_data_reg1,
-		entrada_b  => aux_saida_mux21_extend,
-        seletor  => ALUOP,
-		saida  =>  aux_saida_alu ,
-		b  => aux_saida_alu_b
+		entrada_a => aux_saida_mux3,
+		entrada_b  =>  aux_saida_mux6,
+        seletor  => aux_saida_regE_ALUOP,
+		saida  =>  aux_saida_alu 
+	);
+
+	instancia_regM : component reg_mem
+	port map (
+		i_alu => aux_saida_alu,
+        i_WriteDataE =>  aux_saida_mux4,
+        i_WriteRegE  =>aux_saida_regE_RdE,
+        clk         =>clock,
+       
+        o_alu  => aux_saida_regM_alu,
+        o_WriteDataM  =>  aux_saida_regM_WriteDataM,
+        o_WriteRegM  =>  aux_saida_regM_WriteRegM,
+
+        --sinais de controle
+         --sinais enviados para multiplexadores
+
+         i_MUX_final  => aux_saida_regE_MUX_final,
+         --sinal para blocos
+         i_RegWEN =>aux_saida_regE_RegWEN,
+		i_mem_sel  =>aux_saida_regE_mem_sel,
+         --sinal enviado para o banco de registradores
+         i_load_len   =>aux_saida_regE_load_len, 
+         i_store_len    =>aux_saida_regE_store_len ,
+
+         o_MUX_final  =>    aux_saida_regM_MUX_final,     
+         --sinal para blocos
+         o_RegWEN => aux_saida_regM_RegWEN ,
+		  o_mem_sel    =>    aux_saida_regM_mem_sel,
+         --sinal enviado para o banco de registradores
+         o_load_len   =>  aux_saida_regM_load_len,                          
+         o_store_len    =>   aux_saida_regM_store_len       
+
 	);
 
 	instancia_memd: component memd
 	port map(
 		clk => clock,
-		mem_sel  => mem_sel,
-        adress_mem  => aux_saida_alu,
-		write_data_mem =>  aux_saida_data_reg2,
+		mem_sel  =>   aux_saida_regM_mem_sel,
+        adress_mem  => aux_saida_regM_alu,
+		write_data_mem => aux_saida_regM_WriteDataM,
 		read_data_mem => aux_saida_memd,
-		data_len_memd  => store_len 
+		data_len_memd  =>  aux_saida_regM_store_len
 	);
 
-	instancia_mux41 : component mux41
-	port map(
-		dado_ent_0 => aux_saida_memd,
-		dado_ent_1 => aux_saida_alu,
-		dado_ent_2 => aux_saida_adder4,
-		dado_ent_3 => aux_saida_adder4, -- nao usar
-        sele_ent  =>    MUX_final,
-        dado_sai  =>  aux_saida_mux41
+
+	instancia_regWB : component reg_writeback
+	port map (
+		i_memd => aux_saida_memd,
+        i_ALUoutW =>  aux_saida_regM_alu,
+        i_WriteRegW =>aux_saida_regM_WriteRegM,
+        clk  => clock,
+       
+        o_memd =>aux_saida_regWB_memd ,
+        o_ALUoutW => aux_saida_regWB_ALUoutW ,
+        o_WriteRegW => aux_saida_regWB_WriteRegW,
+
+        --sinais de controle
+
+         i_MUX_final => aux_saida_regM_MUX_final,   
+         i_RegWEN =>aux_saida_regM_RegWEN ,
+         i_load_len   =>  aux_saida_regM_load_len, 
+
+         o_MUX_final  => aux_saida_regWB_MUX_final,
+         o_RegWEN  =>  aux_saida_regWB_RegWEN ,
+         o_load_len  =>  aux_saida_regWB_load_len
 	);
 
-	funct3 <= aux_saida_memi(14 downto 12);
-	funct7 <= aux_saida_memi(31 downto 25);
-	opcode <= aux_saida_memi(6 downto 0);
 	
+	instancia_mux7 : component mux21
+	port map(
+		dado_ent_0 =>aux_saida_regWB_memd ,
+		dado_ent_1 =>aux_saida_regWB_ALUoutW ,
+        sele_ent  => aux_saida_regWB_MUX_final(0),
+        dado_sai  =>  aux_saida_mux7
+	);
+
+	instancia_hazardunit : component HazardUnit
+	port map (
+		branch =>aux_saida_control_branch,
+		jal =>aux_saida_control_jal,
+		instrucao =>aux_saida_regD_inst,
+
+		RegWEN__exe => aux_saida_regE_RegWEN,
+		MUX_final_exe => aux_saida_regE_MUX_final(0),
+		Rs1D => aux_saida_regD_pc4(19 downto 15),
+		Rs2D =>aux_saida_regD_pc4(24 downto 20),
+		Rs1E => aux_saida_regE_Rs1E,
+		Rs2E => aux_saida_regE_Rs2E,
+		--entrada vinda do reg mem
+		RegWEN__mem => aux_saida_regM_RegWEN,
+		MUX_final_mem =>aux_saida_regM_MUX_final(0) ,
+		WriteRegE => aux_saida_regE_RdE,
+		WriteRegM => aux_saida_regM_WriteRegM,
+
+		-- entradas vinda dp reg wb
+		RegWEN__wb => aux_saida_regWB_RegWEN,
+		WriteRegW => aux_saida_regWB_WriteRegW,
+
+		--saidas
+		stall_pc => aux_saida_hazard_stall_pc,
+
+		flush_dec => aux_saida_hazard_flush_dec,
+		stall_dec => aux_saida_hazard_stall_dec,
+		forwardAD => aux_saida_hazard_forwardAD,
+		forwardBD => aux_saida_hazard_forwardBD,
+
+		flush_exe => aux_saida_hazard_flush_exe,
+		forwardAE => aux_saida_hazard_forwardAE,
+		forwardBE => aux_saida_hazard_forwardBE
+	);
+
+	instancia_controlador : component controlador
+	port map (
+		opcode  =>aux_saida_regD_inst(6 downto 0),
+        funct3   => aux_saida_regD_inst(14 downto 12),
+        funct7   => aux_saida_regD_inst(31 downto 25),
+        extend_sel =>aux_saida_control_extend_sel,
+		jal  => aux_saida_control_jal,
+        MUX_final  => aux_saida_control_MUX_final,
+
+        branch   => aux_saida_control_branch,
+
+        RegWEN => aux_saida_control_RegWEN,
+		mem_sel  => aux_saida_control_mem_sel,
+        extendop   => aux_saida_control_extendop,
+        ALUOP  => aux_saida_control_ALUOP,
+
+        load_len   => aux_saida_control_load_len,
+        store_len    =>  aux_saida_control_store_len                           
+	);
 end architecture comportamento;

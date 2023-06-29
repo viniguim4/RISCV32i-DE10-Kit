@@ -25,7 +25,7 @@ entity HazardUnit is
     stall_pc : out std_logic ;
 
     flush_dec, stall_dec : out std_logic;
-    forwardAD, forwardBD : out  std_logic_vector(1 downto 0);
+    forwardAD, forwardBD : out  std_logic;
 
     flush_exe : out std_logic;
     forwardAE, forwardBE : out  std_logic_vector(1 downto 0)
