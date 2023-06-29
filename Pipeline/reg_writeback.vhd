@@ -10,12 +10,12 @@ entity reg_writeback is
     port (
         i_memd: in std_logic_vector(31 downto 0);   
         i_ALUoutW: in std_logic_vector(31 downto 0);  
-        i_WriteRegW: in std_logic_vector(31 downto 0);  
+        i_WriteRegW: in std_logic_vector(4 downto 0);  
         clk         : in std_logic;
        
         o_memd: out std_logic_vector(31 downto 0);  
         o_ALUoutW : out std_logic_vector(31 downto 0);  
-        o_WriteRegW : out std_logic_vector(31 downto 0);  
+        o_WriteRegW : out std_logic_vector(4 downto 0);  
 
         --sinais de controle
 

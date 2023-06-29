@@ -10,12 +10,12 @@ entity reg_mem is
     port (
         i_alu: in std_logic_vector(31 downto 0);   
         i_WriteDataE : in std_logic_vector(31 downto 0);  
-        i_WriteRegE : in std_logic_vector(31 downto 0);  
+        i_WriteRegE : in std_logic_vector(4 downto 0);  
         clk         : in std_logic;
        
         o_alu: out std_logic_vector(31 downto 0);  
         o_WriteDataM : out std_logic_vector(31 downto 0);  
-        o_WriteRegM  : out std_logic_vector(31 downto 0);  
+        o_WriteRegM  : out std_logic_vector(4 downto 0);  
 
         --sinais de controle
          --sinais enviados para multiplexadores

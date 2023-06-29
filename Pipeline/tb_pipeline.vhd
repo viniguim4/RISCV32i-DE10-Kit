@@ -8,14 +8,14 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 -- Este arquivo irá gerar um sinal de clock e reset de modo a possibilitar a simulação do DUT processador_ciclo_unico
 
-entity tb_processador_ciclo_unico is
-end tb_processador_ciclo_unico;
+entity tb_pipeline is
+end tb_pipeline;
 
-architecture estimulos of tb_processador_ciclo_unico is
+architecture estimulos of tb_pipeline is
 	-- Declarar a unidade sob teste
-	component processador_ciclo_unico
+	component via_de_dados_pipeline
 		port (
-			Chave_reset : in std_logic;
+			reset : in std_logic;
 			clock : in std_logic
 		);
 	end component;
@@ -29,7 +29,7 @@ architecture estimulos of tb_processador_ciclo_unico is
 	constant OFFSET     : time := 5 ns;
 begin
 	-- instancia o componente 
-	instancia : processador_ciclo_unico port map(clock => clock, Chave_reset => reset);
+	instancia : via_de_dados_pipeline port map(clock => clock, reset => reset);
 	-- processo para gerar o sinal de clock 		
 	gera_clock : process
 	begin

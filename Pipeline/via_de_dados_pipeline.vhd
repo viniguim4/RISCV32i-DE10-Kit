@@ -7,14 +7,14 @@
 library IEEE;
 use IEEE.std_logic_1164.all;
 
-entity pipeline is
+entity via_de_dados_pipeline is
 	port (
 		clock     : in std_logic;
 		reset     : in std_logic
 	);
-end entity pipeline;
+end entity via_de_dados_pipeline;
 
-architecture comportamento of pipeline is
+architecture comportamento of via_de_dados_pipeline is
 
 	-- declare todos os componentes que serão necessários na sua via_de_dados_ciclo_unico a partir deste comentário
 	component pc is
@@ -220,12 +220,12 @@ architecture comportamento of pipeline is
 		port (
 			i_alu: in std_logic_vector(31 downto 0);   
 			i_WriteDataE : in std_logic_vector(31 downto 0);  
-			i_WriteRegE : in std_logic_vector(31 downto 0);  
+			i_WriteRegE : in std_logic_vector(4 downto 0);  
 			clk         : in std_logic;
 		
 			o_alu: out std_logic_vector(31 downto 0);  
 			o_WriteDataM  : out std_logic_vector(31 downto 0);  
-			o_WriteRegM  : out std_logic_vector(31 downto 0);  
+			o_WriteRegM  : out std_logic_vector(4 downto 0);  
 
 			--sinais de controle
 			--sinais enviados para multiplexadores
@@ -250,12 +250,12 @@ architecture comportamento of pipeline is
 		port (
 			i_memd: in std_logic_vector(31 downto 0);   
 			i_ALUoutW: in std_logic_vector(31 downto 0);  
-			i_WriteRegW : in std_logic_vector(31 downto 0);  
+			i_WriteRegW : in std_logic_vector(4 downto 0);  
 			clk         : in std_logic;
 		
 			o_memd: out std_logic_vector(31 downto 0);  
 			o_ALUoutW  : out std_logic_vector(31 downto 0);  
-			o_WriteRegW  : out std_logic_vector(31 downto 0);  
+			o_WriteRegW  : out std_logic_vector(4 downto 0);  
 
 			--sinais de controle
 
@@ -278,15 +278,15 @@ architecture comportamento of pipeline is
 			--entradas vinda do reg dec (nada)
 		
 			-- entradas vinda do reg exec
-			RegWEN__exe, MUX_final_exe : in std_logic; --(men_sel = Menwrite) (RegWEN = RegWrite)
+			RegWEN_exe, MUX_final_exe : in std_logic; --(men_sel = Menwrite) (RegWEN = RegWrite)
 			Rs1D, Rs2D : in std_logic_vector(4 downto 0);
 			Rs1E, Rs2E : in std_logic_vector(4 downto 0);
 			--entrada vinda do reg mem
-			RegWEN__mem, MUX_final_mem: in std_logic;
+			RegWEN_mem, MUX_final_mem: in std_logic;
 			WriteRegE, WriteRegM : in std_logic_vector(4 downto 0);
 		
 			-- entradas vinda dp reg wb
-			RegWEN__wb : in std_logic;
+			RegWEN_wb : in std_logic;
 			WriteRegW : in std_logic_vector(4 downto 0);
 		
 			--saidas
@@ -348,9 +348,9 @@ architecture comportamento of pipeline is
 	signal aux_saida_mux2 : std_logic_Vector(31 downto 0);
 	signal aux_saida_branch : std_logic;
 	signal aux_saida_sll2 : std_logic_Vector(31 downto 0);
-	signal aux_saida_regE_Rs1E : std_logic_Vector(31 downto 0);
-	signal aux_saida_regE_Rs2E : std_logic_Vector(31 downto 0);
-	signal aux_saida_regE_RdE : std_logic_Vector(31 downto 0);
+	signal aux_saida_regE_Rs1E : std_logic_Vector(4 downto 0);
+	signal aux_saida_regE_Rs2E : std_logic_Vector(4 downto 0);
+	signal aux_saida_regE_RdE : std_logic_Vector(4 downto 0);
 	signal aux_saida_regE_Reg1_dado : std_logic_Vector(31 downto 0);
 	signal aux_saida_regE_Reg2_dado : std_logic_Vector(31 downto 0);
 	signal aux_saida_regE_sinal_extend : std_logic_Vector(31 downto 0);
@@ -368,7 +368,7 @@ architecture comportamento of pipeline is
 	signal aux_saida_alu : std_logic_Vector(31 downto 0);
 	signal aux_saida_regM_alu: std_logic_Vector(31 downto 0);
 	signal aux_saida_regM_WriteDataM : std_logic_Vector(31 downto 0);
-	signal aux_saida_regM_WriteRegM : std_logic_Vector(31 downto 0);
+	signal aux_saida_regM_WriteRegM : std_logic_Vector(4 downto 0);
 	signal aux_saida_regM_MUX_final   : std_logic_Vector(1 downto 0);
 	signal aux_saida_regM_RegWEN   : std_logic;
 	signal aux_saida_regM_mem_sel   : std_logic;
@@ -377,7 +377,7 @@ architecture comportamento of pipeline is
 	signal aux_saida_memd : std_logic_Vector(31 downto 0);
 	signal aux_saida_regWB_memd : std_logic_Vector(31 downto 0);
 	signal aux_saida_regWB_ALUoutW  : std_logic_Vector(31 downto 0);
-	signal aux_saida_regWB_WriteRegW : std_logic_Vector(31 downto 0);
+	signal aux_saida_regWB_WriteRegW : std_logic_Vector(4 downto 0);
 	signal aux_saida_regWB_MUX_final   : std_logic_Vector(1 downto 0);
 	signal aux_saida_regWB_RegWEN   : std_logic;
 	signal aux_saida_regWB_load_len  : std_logic_vector(1 downto 0);
@@ -585,8 +585,8 @@ begin
 	port map(
 		dado_ent_0 => aux_saida_regE_Reg1_dado,
 		dado_ent_1 => aux_saida_mux7,
-		dado_ent_2 => aux_saida_regE_ALUOP,
-		dado_ent_3 => open, -- nao usar
+		dado_ent_2 => aux_saida_regM_alu,
+		dado_ent_3 => aux_saida_regE_Reg1_dado, -- nao usar
         sele_ent  => aux_saida_hazard_forwardAE,
         dado_sai  =>  aux_saida_mux3
 	);
@@ -595,8 +595,8 @@ begin
 	port map(
 		dado_ent_0 => aux_saida_regE_Reg2_dado,
 		dado_ent_1 => aux_saida_mux7,
-		dado_ent_2 => aux_saida_regE_ALUOP,
-		dado_ent_3 => open, -- nao usar
+		dado_ent_2 => aux_saida_regM_alu,
+		dado_ent_3 => aux_saida_regE_Reg2_dado, -- nao usar
         sele_ent  => aux_saida_hazard_forwardBE,
         dado_sai  =>  aux_saida_mux4
 	);
@@ -697,20 +697,20 @@ begin
 		jal =>aux_saida_control_jal,
 		instrucao =>aux_saida_regD_inst,
 
-		RegWEN__exe => aux_saida_regE_RegWEN,
+		RegWEN_exe => aux_saida_regE_RegWEN,
 		MUX_final_exe => aux_saida_regE_MUX_final(0),
 		Rs1D => aux_saida_regD_pc4(19 downto 15),
 		Rs2D =>aux_saida_regD_pc4(24 downto 20),
 		Rs1E => aux_saida_regE_Rs1E,
 		Rs2E => aux_saida_regE_Rs2E,
 		--entrada vinda do reg mem
-		RegWEN__mem => aux_saida_regM_RegWEN,
+		RegWEN_mem => aux_saida_regM_RegWEN,
 		MUX_final_mem =>aux_saida_regM_MUX_final(0) ,
 		WriteRegE => aux_saida_regE_RdE,
 		WriteRegM => aux_saida_regM_WriteRegM,
 
 		-- entradas vinda dp reg wb
-		RegWEN__wb => aux_saida_regWB_RegWEN,
+		RegWEN_wb => aux_saida_regWB_RegWEN,
 		WriteRegW => aux_saida_regWB_WriteRegW,
 
 		--saidas
