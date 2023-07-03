@@ -19,7 +19,7 @@ end reg_decod;
 
 architecture comportamental of reg_decod is
 begin
-    process (clk) is
+    process (clk, entrada_memi, entrada_pc4, flush_dec, stall_dec) is
     begin
         if (rising_edge(clk) ) then
             if(stall_dec = '0') then

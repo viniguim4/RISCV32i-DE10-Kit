@@ -26,7 +26,7 @@ architecture estimulos of tb_pipeline is
 	-- Definição das configurações de clock				
 	constant PERIODO    : time := 20 ns;
 	constant DUTY_CYCLE : real := 0.5;
-	constant OFFSET     : time := 5 ns;
+	constant OFFSET     : time := 15 ns;
 begin
 	-- instancia o componente 
 	instancia : via_de_dados_pipeline port map(clock => clock, reset => reset);
@@ -45,9 +45,10 @@ begin
 	gera_reset : process
 	begin
 		reset <= '1';
-		for i in 1 to 2 loop
-			wait until rising_edge(clock);
-		end loop;
+		--for i in 1 to 2 loop
+		--	wait until rising_edge(clock);
+		--end loop;
+		wait for 10 ns;
 		reset <= '0';
 		wait;
 	end process gera_reset;

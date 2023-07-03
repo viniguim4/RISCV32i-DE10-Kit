@@ -33,7 +33,7 @@ end reg_writeback;
 
 architecture comportamental of reg_writeback is
 begin
-    process (clk) is
+    process (clk, i_memd, i_ALUoutW, i_WriteRegW, i_MUX_final, i_RegWEN, i_load_len) is
     begin
         if (rising_edge(clk) ) then
             o_memd <= i_memd;

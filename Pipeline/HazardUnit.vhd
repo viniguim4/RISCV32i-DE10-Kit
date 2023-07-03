@@ -24,7 +24,7 @@ entity HazardUnit is
     --saidas
     stall_pc : out std_logic ;
 
-    flush_dec, stall_dec : out std_logic;
+    stall_dec : out std_logic;
     forwardAD, forwardBD : out  std_logic;
 
     flush_exe : out std_logic;
@@ -38,49 +38,49 @@ architecture Behavioral of HazardUnit is
   signal lwstall, branchstall : std_logic;
   begin
     
-    process(lwstall, branchstall)
-    begin
-      --logia mux_exe_alu forwardAE
-      if ((RS1E /= "00000") and (RS1E = WriteRegM) and (RegWEN_mem = '1') )then
+    process(lwstall, branchstall, branch, RegWEN_exe, MUX_final_exe, RegWEN_mem, MUX_final_mem, WriteRegE, WriteRegM, RegWEN_wb, WriteRegW) is
+      begin
+        --logia mux_exe_alu forwardAE
+        if ((RS1E /= "00000") and (RS1E = WriteRegM) and (RegWEN_mem = '1') )then
+            ForwardAE <= "10";
+        elsif ((RS1E /= "00000") and (RS1E = WriteRegW) and RegWEN_wb = '1') then
+            ForwardAE <= "01";
+        else ForwardAE <= "00";
+        end if;
+        
+        --logia mux_exe_alu forwardBE
+        if ((RS2E /= "00000") and (RS2E = WriteRegM) and RegWEN_mem = '1') then
           ForwardAE <= "10";
-      elsif ((RS1E /= "00000") and (RS1E = WriteRegW) and RegWEN_wb = '1') then
-          ForwardAE <= "01";
-      else ForwardAE <= "00";
-      end if;
-      
-      --logia mux_exe_alu forwardBE
-      if ((RS2E /= "00000") and (RS2E = WriteRegM) and RegWEN_mem = '1') then
-        ForwardAE <= "10";
-      elsif ((RS2E /= "00000") and (RS2E = WriteRegW)and RegWEN_wb = '1') then
-          ForwardAE <= "01";
-      else ForwardAE <= "00";
-      end if;
-      
-        --stalls
-      if(((RS1D = RS2E) OR (RS2D = RS2E)) and MUX_final_exe = '1') then
-        lwstall <= '1';
-      else lwstall <= '0';
-      end if;
+        elsif ((RS2E /= "00000") and (RS2E = WriteRegW)and RegWEN_wb = '1') then
+            ForwardAE <= "01";
+        else ForwardAE <= "00";
+        end if;
+        
+          --stalls
+        if(((RS1D = RS2E) OR (RS2D = RS2E)) and MUX_final_exe = '1') then
+          lwstall <= '1';
+        else lwstall <= '0';
+        end if;
 
-      if( (branch= '1' and RegWEN_exe= '1' and (WriteRegE = RS1D  OR WriteRegE = RS2D )) OR (branch= '1' and MUX_final_mem = '1' and (WriteRegM = RS1D OR WriteRegM = RS2D)) ) then
-        branchstall <= '1';
-      else branchstall <= '0';
-      end if;
+        if( (branch= '1' and RegWEN_exe= '1' and (WriteRegE = RS1D  OR WriteRegE = RS2D )) OR (branch= '1' and MUX_final_mem = '1' and (WriteRegM = RS1D OR WriteRegM = RS2D)) ) then
+          branchstall <= '1';
+        else branchstall <= '0';
+        end if;
 
-      stall_pc <= lwstall or branchstall;
-      stall_dec <= lwstall or branchstall;
-      flush_dec <= lwstall or branchstall;
+        stall_pc <= lwstall or branchstall;
+        stall_dec <= lwstall or branchstall;
+        flush_exe <= lwstall or branchstall;
 
-      --instrução b
-      if((RS1D /= "00000") and (RS1D = WriteRegM) and RegWEN_mem = '1') then 
-        forwardAD  <= '1';
-      else forwardAD <= '0';
-      end if;
+        --instrução b
+        if((RS1D /= "00000") and (RS1D = WriteRegM) and RegWEN_mem = '1') then 
+          forwardAD  <= '1';
+        else forwardAD <= '0';
+        end if;
 
-      if((RS2D /= "00000") and (RS2D = WriteRegM) and RegWEN_mem = '1') then 
-        forwardBD  <= '1';
-      else forwardBD <= '0';
-      end if;
+        if((RS2D /= "00000") and (RS2D = WriteRegM) and RegWEN_mem = '1') then 
+          forwardBD  <= '1';
+        else forwardBD <= '0';
+        end if;
 
     end process;
 

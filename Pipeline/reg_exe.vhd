@@ -52,7 +52,7 @@ end reg_exe;
 
 architecture comportamental of reg_exe is
 begin
-    process (clk) is
+    process (clk, RdE, flush_exe, entra_Reg1_dado, entra_Reg2_dado, entrada_sinal_extend, i_extend_sel, i_MUX_final, i_RegWEN, i_mem_sel, i_extendop, i_ALUOP, i_load_len, i_store_len) is
     begin
         if (rising_edge(clk) ) then
             if(flush_exe = '0') then

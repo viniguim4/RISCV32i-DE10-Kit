@@ -20,7 +20,7 @@ end entity;
 
 architecture comportamental of pc is
 	begin
-		process (clk, reset)
+		process (clk, reset, entrada)
 		begin
 		if (reset = '1') then
 			saida <= (others => '0');

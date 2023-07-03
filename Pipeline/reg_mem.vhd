@@ -39,12 +39,12 @@ end reg_mem;
 
 architecture comportamental of reg_mem is
 begin
-    process (clk) is
+    process (clk, i_alu, i_WriteDataE, i_WriteRegE, i_MUX_final, i_RegWEN, i_mem_sel, i_load_len, i_store_len) is
     begin
         if (rising_edge(clk) ) then
             o_alu <= i_alu;
             o_WriteDataM <= i_WriteDataE;
-            o_WriteRegM     <=  o_WriteRegM;
+            o_WriteRegM     <=  i_WriteRegE;
             o_MUX_final     <= i_MUX_final;        
 
             o_RegWEN     <= i_RegWEN;       

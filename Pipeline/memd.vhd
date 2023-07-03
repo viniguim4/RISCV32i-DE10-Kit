@@ -31,7 +31,7 @@ architecture comportamental of memd is
     signal ram_addr : std_logic_vector(MD_ADDR_WIDTH - 1 downto 0);
 begin
     ram_addr <=  adress_mem(MD_ADDR_WIDTH - 1 downto 0)  ;
-    process (clk)
+    process (clk, mem_sel, data_len_memd, ram_addr, write_data_mem) is 
     begin
         if (rising_edge(clk)) then
             if (mem_sel = '1') then

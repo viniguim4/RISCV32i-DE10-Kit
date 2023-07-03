@@ -292,7 +292,7 @@ architecture comportamento of via_de_dados_pipeline is
 			--saidas
 			stall_pc : out std_logic ;
 		
-			flush_dec, stall_dec : out std_logic;
+			stall_dec : out std_logic;
 			forwardAD, forwardBD : out  std_logic;
 		
 			flush_exe : out std_logic;
@@ -387,6 +387,7 @@ architecture comportamento of via_de_dados_pipeline is
 	signal aux_saida_addnormal_baixo : std_logic_Vector(31 downto 0);
 	signal aux_saida_mux_branch : std_logic_Vector(31 downto 0);
 	signal aux_saida_mux_jump : std_logic_Vector(31 downto 0);
+	signal aux_saida_mux0 : std_logic_Vector(31 downto 0);
 	
 	--sinais de controle
 	signal aux_saida_control_extend_sel : std_logic;
@@ -419,7 +420,7 @@ begin
 
 	instancia_pc : component pc
 	port map(
-		entrada => aux_saida_mux_jump,
+		entrada => aux_saida_mux0 ,
 		stall_pc => aux_saida_hazard_stall_pc,
 		saida   => aux_saida_pc,
 		clk     => clock,
@@ -490,7 +491,7 @@ begin
         entrada_memi   =>aux_saida_memi,
         entrada_pc4    =>aux_saida_adder4,
         clk => clock,
-		flush_dec   =>  aux_saida_hazard_flush_dec,
+		flush_dec   =>  aux_saida_and ,
         stall_dec   =>aux_saida_hazard_stall_dec ,
         saida_memi  => aux_saida_regD_inst,
         saida_pc4   =>aux_saida_regD_pc4
@@ -498,9 +499,9 @@ begin
 
 	instancia_banco_reg : component banco_registradores
 	port map(
-		ent_Rs1_ende => aux_saida_regD_pc4(19 downto 15),
-        ent_Rs2_ende => aux_saida_regD_pc4(24 downto 20),
-        ent_Rd_ende => aux_saida_regD_pc4(11 downto 7),
+		ent_Rs1_ende => aux_saida_regD_inst(19 downto 15),
+        ent_Rs2_ende => aux_saida_regD_inst(24 downto 20),
+        ent_Rd_ende => aux_saida_regWB_WriteRegW,
         write_data_reg => aux_saida_mux7,
         sai_Reg1_dado => aux_saida_data_reg1,
         sai_Reg2_dado => aux_saida_data_reg2,
@@ -511,7 +512,7 @@ begin
 
 	instancia_extensor : component extensor
 	port map(
-		entrada_Rs  => aux_saida_regD_pc4,
+		entrada_Rs  => aux_saida_regD_inst,
 		extendop  => aux_saida_control_extendop,
 		saida => aux_saida_extensor
 	);
@@ -540,9 +541,9 @@ begin
 
 	instancia_regE : component reg_exe
 	port map (
-		Rs1D => aux_saida_regD_pc4(19 downto 15),
-        Rs2D => aux_saida_regD_pc4(24 downto 20),
-        RdD =>aux_saida_regD_pc4(11 downto 7),
+		Rs1D => aux_saida_regD_inst(19 downto 15),
+        Rs2D => aux_saida_regD_inst(24 downto 20),
+        RdD =>aux_saida_regD_inst(11 downto 7),
         clk  =>clock,
         flush_exe => aux_saida_hazard_flush_exe, 
         entrada_sinal_extend => aux_saida_extensor,
@@ -605,8 +606,16 @@ begin
 	port map(
 		dado_ent_0 => aux_saida_mux4,
 		dado_ent_1 => aux_saida_regE_sinal_extend ,
-        sele_ent  => aux_saida_regE_mem_sel,
+        sele_ent  => aux_saida_regE_extend_sel,
         dado_sai  =>  aux_saida_mux6
+	);
+
+	instancia_mux0: component mux21
+	port map(
+		dado_ent_0 =>  aux_saida_adder4,
+		dado_ent_1 => aux_saida_mux_jump ,
+        sele_ent  => aux_saida_and,
+        dado_sai  =>  aux_saida_mux0 
 	);
 
 	instancia_alu: component ula
@@ -686,7 +695,7 @@ begin
 	instancia_mux7 : component mux21
 	port map(
 		dado_ent_0 =>aux_saida_regWB_memd ,
-		dado_ent_1 =>aux_saida_regWB_ALUoutW ,
+		dado_ent_1 =>aux_saida_regWB_ALUoutW,
         sele_ent  => aux_saida_regWB_MUX_final(0),
         dado_sai  =>  aux_saida_mux7
 	);
@@ -699,8 +708,8 @@ begin
 
 		RegWEN_exe => aux_saida_regE_RegWEN,
 		MUX_final_exe => aux_saida_regE_MUX_final(0),
-		Rs1D => aux_saida_regD_pc4(19 downto 15),
-		Rs2D =>aux_saida_regD_pc4(24 downto 20),
+		Rs1D => aux_saida_regD_inst(19 downto 15),
+		Rs2D =>aux_saida_regD_inst(24 downto 20),
 		Rs1E => aux_saida_regE_Rs1E,
 		Rs2E => aux_saida_regE_Rs2E,
 		--entrada vinda do reg mem
@@ -716,7 +725,6 @@ begin
 		--saidas
 		stall_pc => aux_saida_hazard_stall_pc,
 
-		flush_dec => aux_saida_hazard_flush_dec,
 		stall_dec => aux_saida_hazard_stall_dec,
 		forwardAD => aux_saida_hazard_forwardAD,
 		forwardBD => aux_saida_hazard_forwardBD,

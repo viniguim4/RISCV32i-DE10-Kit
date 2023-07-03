@@ -19,7 +19,7 @@ end registrador;
 
 architecture comportamental of registrador is
 begin
-    process (clk) is
+    process (clk, reset, WE, entrada_dados)
     begin
         if (rising_edge(clk)) then
             if (WE = '1') then

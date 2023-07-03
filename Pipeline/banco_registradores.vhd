@@ -42,7 +42,7 @@ begin
         sai_Reg2_dado <= banco(to_integer(unsigned(ent_Rs2_ende)));
     end process;
 
-    escrita : process (clk) is
+    escrita : process (clk, RegWEN, ent_Rd_ende, write_data_reg, data_len_breg) is
     begin
         if rising_edge(clk) and RegWEN = '1' then
             case data_len_breg is
