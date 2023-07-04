@@ -112,7 +112,6 @@ package interrupt_ctl_pkg is
   end component;
 end package;
 
-
 library ieee;
 use ieee.std_logic_1164.all;
 
