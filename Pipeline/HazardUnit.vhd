@@ -61,8 +61,8 @@ architecture Behavioral of HazardUnit is
           lwstall <= '1';
         else lwstall <= '0';
         end if;
-
-        if( (branch= '1' and RegWEN_exe= '1' and (WriteRegE = RS1D  OR WriteRegE = RS2D )) OR (branch= '1' and MUX_final_mem = '1' and (WriteRegM = RS1D OR WriteRegM = RS2D)) ) then
+            --(branch= '1' and RegWEN_exe= '1' and (WriteRegE = RS1D  OR WriteRegE = RS2D )) OR (branch= '1' and MUX_final_mem = '1' and (WriteRegM = RS1D OR WriteRegM = RS2D)) )
+        if( (branch= '1' and RegWEN_exe= '1') OR (branch= '1' and MUX_final_mem = '1' and (WriteRegM = RS1D OR WriteRegM = RS2D)) ) then
           branchstall <= '1';
         else branchstall <= '0';
         end if;

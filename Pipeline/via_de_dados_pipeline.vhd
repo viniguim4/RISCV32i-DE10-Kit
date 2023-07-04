@@ -694,8 +694,8 @@ begin
 	
 	instancia_mux7 : component mux21
 	port map(
-		dado_ent_0 =>aux_saida_regWB_memd ,
-		dado_ent_1 =>aux_saida_regWB_ALUoutW,
+		dado_ent_0 =>aux_saida_regWB_ALUoutW,
+		dado_ent_1 =>aux_saida_regWB_memd ,
         sele_ent  => aux_saida_regWB_MUX_final(0),
         dado_sai  =>  aux_saida_mux7
 	);

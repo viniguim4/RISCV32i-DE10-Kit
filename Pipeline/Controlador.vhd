@@ -43,7 +43,7 @@ architecture behavior of controlador is
                         RegWEN <= '1';
                         branch <= '0';
                         mem_sel <= '0';
-                        MUX_final <= "00";
+                        MUX_final <= "01";
                         jal <= '0';
                         store_len <= "10";
                         ALUOP <="0000"; --somar
@@ -60,7 +60,7 @@ architecture behavior of controlador is
                         RegWEN <= '1';
                         branch <= '0';
                         mem_sel <= '0';
-                        MUX_final <= "01";
+                        MUX_final <= "00";
                         jal <= '0';
                         store_len <= "10";
                         load_len <= "10";
@@ -80,7 +80,7 @@ architecture behavior of controlador is
                         extend_sel <= '0';
                         RegWEN <= '1';
                         mem_sel <= '0';
-                        MUX_final <= "01";
+                        MUX_final <= "00";
                         branch <= '0';
                         jal <= '0';
                         store_len <= "10";
@@ -105,7 +105,7 @@ architecture behavior of controlador is
                         extend_sel <= '1';
                         RegWEN <= '0';
                         mem_sel <= '1';
-                        MUX_final <= "00";
+                        MUX_final <= "01";
                         branch <= '0';
                         jal <= '0';
                         case funct3 is
@@ -121,7 +121,7 @@ architecture behavior of controlador is
                         extend_sel <= '0';
                         RegWEN <= '0';
                         mem_sel <= '0';
-                        MUX_final <= "01";
+                        MUX_final <= "00";
                         branch <= '1';
                         jal <= '0';
                         store_len <= "XX";
@@ -139,7 +139,7 @@ architecture behavior of controlador is
                         extend_sel <= '1';
                         RegWEN <= '1';
                         mem_sel <= '0';
-                        MUX_final <= "01";
+                        MUX_final <= "00";
                         branch <= '0';
                         jal <= '0';
                         store_len <= "10";
