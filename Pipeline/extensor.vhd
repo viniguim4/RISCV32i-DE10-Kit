@@ -25,6 +25,7 @@ architecture behavior of extensor is
 	signal aux_12 : std_logic_vector(11 downto 0);		--12 bits
 	signal extensao_12 : std_logic_vector(11 downto 0); --12 bits JAL
 	signal aux_20 : std_logic_vector(19 downto 0);		--20 bits JAL
+
 begin
 	process (extendop, entrada_Rs, aux_12, extensao_12, aux_20)
 	variable tipo_i : std_logic_vector(31 downto 0);
@@ -38,7 +39,7 @@ begin
 			elsif (extendop = "001" ) then --  instrução tipo b			
 				aux_12 <=  entrada_Rs(31)  & entrada_Rs(7) & entrada_Rs(30 downto 25) & entrada_Rs(11 downto 8);
 				saida <= std_logic_vector(shift_right(unsigned(extensao_20 & aux_12), 1) -1  );   
-			elsif (extendop = "010" ) then --  instrução tipo s			
+			elsif (extendop = "010" ) then --  instrução tipo s	
 				aux_12 <=  entrada_Rs(31)  & entrada_Rs(7) & entrada_Rs(30 downto 25) & entrada_Rs(11 downto 8);
 				saida <= std_logic_vector(shift_right(unsigned(extensao_20 & aux_12), 1) );   
 			elsif (extendop = "011" ) then --  instrução tipo u			

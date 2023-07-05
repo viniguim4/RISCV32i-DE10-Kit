@@ -50,10 +50,10 @@ architecture Behavioral of HazardUnit is
         
         --logia mux_exe_alu forwardBE
         if ((RS2E /= "00000") and (RS2E = WriteRegM) and RegWEN_mem = '1') then
-          ForwardAE <= "10";
+          ForwardBE <= "10";
         elsif ((RS2E /= "00000") and (RS2E = WriteRegW)and RegWEN_wb = '1') then
-            ForwardAE <= "01";
-        else ForwardAE <= "00";
+            ForwardBE <= "01";
+        else ForwardBE <= "00";
         end if;
         
           --stalls
